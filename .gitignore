@@ -2,3 +2,4 @@
 .venv
 *.log
 python/block1/top_students.txt
+python/block1/high_earners.txt
