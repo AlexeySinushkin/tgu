@@ -1,2 +1,4 @@
 .idea
 .venv
+*.log
+python/block1/top_students.txt

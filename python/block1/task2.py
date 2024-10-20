@@ -1,8 +1,6 @@
 import logging
 from collections import defaultdict
 
-from scrapy.pipelines.files import FileException
-
 logging.basicConfig(level=logging.DEBUG, filename='app.log', encoding='UTF-8', filemode='w', format='%(levelname)s: %(message)s')
 
 
@@ -52,7 +50,7 @@ try:
                " выше определенного порога.\n")
     for student in good_students:
       file.write(f"{student["name"]}\n")
-except FileException as e:
+except Exception as e:
   logging.error(f"Ошибка при сохранении {e}")
 
 # Выведите информацию о каждом студенте в читабельном формате.
