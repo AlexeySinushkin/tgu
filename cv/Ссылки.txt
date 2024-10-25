@@ -1,0 +1,18 @@
+Занятие 3. Принципы цветового восприятия
+Статья: "Основы цветового восприятия" на Cambridge in colour
+https://www.cambridgeincolour.com/ru/tutorials-ru/color-perception.htm
+Статья: "Что происходит с цветом?" на Хабре
+https://habr.com/ru/articles/652653/
+Статья: "OpenCV - быстрый старт" на Хабре
+https://habr.com/ru/articles/678570/
+COMPUTER VISION Linda G. Shapiro George C. Stockman (Библия на русском 761стр)
+
+Вебинар. Занятие 7. Форматы графических изображений
+
+Материалы для изучения до вебинара:
+
+1) https://skillbox.ru/media/design/rgb-cmyk-lab/
+2) https://learn.microsoft.com/ru-ru/windows/win32/gdiplus/-gdiplus-types-of-bitmaps-about
+3) https://habr.com/ru/companies/vk/articles/512004/
+4) https://ru.wikipedia.org/wiki/BMP#%D0%9F%D0%BE%D0%BB%D0%B5_Compression
+5) https://ru.wikipedia.org/wiki/PNG
