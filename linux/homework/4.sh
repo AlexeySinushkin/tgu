@@ -17,7 +17,7 @@ for file_name in $(ls ~/.local/share/Trash/files);
 do
 info_file_name=~/.local/share/Trash/info/$file_name.trashinfo;
 echo $info_file_name
-del_date=$(cat $info_file_name | grep -Po '\d{4}-\d{2}-\d{2}')
+del_date=$(cat $info_file_name | grep DeletionDate= | grep -Po '\d{4}-\d{2}-\d{2}')
 timestamp=`date -d"$del_date" +%s`
 echo $timestamp
 if [[ $timestamp -le $threshold ]]; then
