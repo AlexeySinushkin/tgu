@@ -72,6 +72,49 @@ def nms(img, theta):
   return result
 
 
+# Двойная пороговая фильтрация. Если значение пикселя
+# выше верхней границы – он принимает максимальное значение (граница считается
+# достоверной), если ниже – пиксель подавляется, точки со значением, попадающим в
+# диапазон между порогов, принимают фиксированное среднее значение (они будут
+# уточнены на следующем этапе).
+def threshold(img, lowRatio=0.2, highRatio=0.3, weak=150, strong=255):
+  height, width = img.shape
+  result = np.zeros((height, width), dtype=np.int32)
+  high_threshold = img.max() * highRatio
+  low_threshold = high_threshold * lowRatio
+
+  strong_i, strong_j = np.where(img >= high_threshold)
+  weak_i, weak_j = np.where((img < high_threshold) & (img > low_threshold))
+
+  result[strong_i, strong_j] = strong
+  result[weak_i, weak_j] = weak
+  return result
+
+
+# Трассировка. те пиксела, что были слабыми становятся либо 0 либо сильными
+# в зависимости от соседей
+def hysteresis(img, weak=150, strong=255):
+  height, width = img.shape
+  result = img.copy()
+  for h in range(1, height - 1):
+    for w in range(1, width - 1):
+      if img[h, w] == strong:
+        result[h, w] = strong
+      elif img[h, w] == weak:
+        if (
+            (img[h + 1, w + 1] == strong or img[h - 1, w - 1] == strong) or
+            (img[h, w + 1] == strong or img[h, w - 1] == strong) or
+            (img[h + 1, w] == strong or img[h - 1, w] == strong) or
+            (img[h + 1, w-1] == strong or img[h - 1, w+1] == strong)
+        ):
+          result[h, w] = strong
+        # else:
+          # result[h, w] = 0
+      elif img[h, w] > 0 :
+        print('{}'.format(img[h,w]))
+  return result
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
   image = cv2.imread("1.png")
@@ -82,4 +125,6 @@ if __name__ == '__main__':
   grad_norm = hypot(grad_x, grad_y)
   theta = np.arctan2(grad_y, grad_x)
   img_nms = nms(grad_norm, theta)
-  imshow(img_nms)
+  img_threshold = threshold(img_nms)
+  img_hyst = hysteresis(img_threshold)
+  imshow(img_hyst)
