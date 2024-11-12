@@ -16,11 +16,19 @@ def to_grayscale(img: np.ndarray):
   B = 0.1140
 
   b = img[..., 0]
-  g = img[..., 0]
-  r = img[..., 0]
+  g = img[..., 1]
+  r = img[..., 2]
   result = B * b + G * g + R * r
   return result
 
+def to_red(img: np.ndarray):
+  return img[..., 2]
+
+def to_green(img: np.ndarray):
+  return img[..., 1]
+
+def to_blue(img: np.ndarray):
+  return img[..., 0]
 
 def hypot(imgX, imgY):
   scale = lambda x: (x - x.min()) / (x.max() - x.min()) * 255
@@ -77,7 +85,7 @@ def nms(img, theta):
 # достоверной), если ниже – пиксель подавляется, точки со значением, попадающим в
 # диапазон между порогов, принимают фиксированное среднее значение (они будут
 # уточнены на следующем этапе).
-def threshold(img, lowRatio=0.2, highRatio=0.3, weak=150, strong=255):
+def threshold(img, lowRatio=0.1, highRatio=0.2, weak=150, strong=255):
   height, width = img.shape
   result = np.zeros((height, width), dtype=np.int32)
   high_threshold = img.max() * highRatio
@@ -108,18 +116,15 @@ def hysteresis(img, weak=150, strong=255):
             (img[h + 1, w-1] == strong or img[h - 1, w+1] == strong)
         ):
           result[h, w] = strong
-        # else:
-          # result[h, w] = 0
+        else:
+          result[h, w] = 0
       elif img[h, w] > 0 :
         print('{}'.format(img[h,w]))
   return result
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-  image = cv2.imread("1.png")
-  gray_image = to_grayscale(image)
-  blur_image = cv2.GaussianBlur(gray_image, ksize=(29, 29), sigmaX=2, sigmaY=2)
+def apply_pipeline(img):
+  blur_image = cv2.GaussianBlur(img, ksize=(29, 29), sigmaX=2, sigmaY=2)
   grad_x = cv2.Sobel(blur_image, cv2.CV_64F, 1, 0)
   grad_y = cv2.Sobel(blur_image, cv2.CV_64F, 0, 1)
   grad_norm = hypot(grad_x, grad_y)
@@ -127,4 +132,19 @@ if __name__ == '__main__':
   img_nms = nms(grad_norm, theta)
   img_threshold = threshold(img_nms)
   img_hyst = hysteresis(img_threshold)
-  imshow(img_hyst)
+  return img_hyst
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+  image = cv2.imread("1.png")
+  red = to_red(image)
+  green = to_green(image)
+  blue = to_blue(image)
+
+  red = apply_pipeline(red)
+  imshow(red)
+  # green = apply_pipeline(green)
+  # blue = apply_pipeline(blue)
+  #imshow(red | green | blue)
+
