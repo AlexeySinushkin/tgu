@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_user_posts(user_id):
-  logging.info("Отправка запроса на получение постов...")
+  logging.info("Отправка запроса на получение списска дел...")
   url = f'https://dummyjson.com/users/{user_id}/posts'
   response = requests.get(url)
   response.raise_for_status()
@@ -18,7 +18,7 @@ def get_user_posts(user_id):
 
 try:
   for post in get_user_posts(5):
-    print(f'{post.get("title")}')
+    print(f'\t \u2022 {post.get("title")}')
 except Exception as e:
   logging.error(f"Произошла ошибка: {e}")
 
