@@ -1,5 +1,3 @@
-from multiprocessing.connection import default_family
-
 import requests
 import json
 import logging
