@@ -1,13 +1,7 @@
-from multiprocessing.connection import default_family
-
 import requests
-import json
 import logging
 
-from requests import session
-from urllib3 import request
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # 1. Авторизуется под пользователем « emilys» с паролем « emilyspass».
 # 2. Обновляет поле «lastName» пользователя на «"UpdatedLastName"« с помощью метода «PUT».
