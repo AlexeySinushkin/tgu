@@ -1,5 +1,4 @@
 import numpy as np
-from streamlit import cache
 
 # Напишите скрипт на Python, который:
 # 1. Создаст два массива:
