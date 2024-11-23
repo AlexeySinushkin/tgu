@@ -4,14 +4,11 @@
 # writer = csv.writer(open(path, 'w'), delimiter=';')
 # writer.writerows(row for row in reader)
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
+import book_page_parser
+from book_page_parser import parse_book
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    parse_book('https://books.toscrape.com/catalogue/olio_984/index.html')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
