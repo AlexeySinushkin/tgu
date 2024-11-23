@@ -50,3 +50,8 @@ def task2():
 
 task1()
 task2()
+
+
+# image_original = cv2.imread("tiger-low-contrast.png", 0)
+# cv2.imshow("result", image_original)
+# cv2.waitKey(0)
