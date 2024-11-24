@@ -2,13 +2,14 @@ from book_list_page_parser import parse_page
 from book_page_parser import parse_book
 import logging
 
+from books_stat import print_statistic
 from store import save_to_csv
 
 logging.basicConfig(level=logging.INFO)
 
 
 base_path = 'https://books.toscrape.com/'
-
+file_name = 'books_data.csv'
 # Подразумеваем что страниц в будущем будет больше 50
 # Постранично вычитываем количество книг с каждой страницы
 # Если окажется 0 - значит последняя (не существующая страница)
@@ -35,10 +36,10 @@ def scrape():
                 logging.warning(f'Не удалось загрузить книгу по адресу {book_link}')
         page_num+=1
 
-    # Выведите основные статистики по числовым данным...
-    print(f'Количество книг {len(books_map)}')
-    save_to_csv(books_map.values(), 'books_data.csv')
+    save_to_csv(books_map.values(), file_name)
     logging.info(f'Завершено успешно. Сохранено {len(books_map)}')
+    # Выведите основные статистики по числовым данным...
+    print_statistic(file_name)
 
 if __name__ == '__main__':
     scrape()

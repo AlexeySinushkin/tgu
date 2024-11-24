@@ -14,5 +14,9 @@ class Book:
     self.available_count = 0
     self.number_of_reviews = 0
 
+  # для pandas
+  def __getitem__(self, key):
+    return getattr(self, key)
+
   def to_string(self):
     return ppretty(self, seq_length=10)
