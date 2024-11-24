@@ -1,8 +1,10 @@
 import logging
 import csv
-from encodings.utf_8 import encode
+from dataclasses import fields
 
-
+headerList = ['scrape_url', 'upc', 'name', 'number_of_reviews', 'price',
+              'price_with_tax', 'price_without_tax', 'tax',
+              'rating', 'available_count', 'description']
 class BookIterator:
   def __init__(self, book):
     self.book = book
@@ -46,6 +48,7 @@ def save_to_csv(books, file_name):
     logging.info(f'Начало сохранения в файл {file_name}')
     with open(file_name, 'w', newline='', encoding='utf-8') as file:
       writer = csv.writer(file, delimiter=',')
+      writer.writerow(headerList)
       for book in books:
         logging.info(f'{book.upc} {book.scrape_url}')
         writer.writerow(BookIterator(book))

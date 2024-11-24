@@ -1,5 +1,4 @@
 from book_page_parser import parse_book
-from objects import Book
 from store import save_to_csv
 
 book_url = 'https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html'
