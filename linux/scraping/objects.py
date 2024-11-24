@@ -2,6 +2,7 @@ from ppretty import ppretty
 
 class Book:
   def __init__(self):
+    self.scrape_url = ''
     self.upc = ''
     self.name = ''
     self.description = ''

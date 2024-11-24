@@ -1,11 +1,7 @@
-import requests
-from bs4 import BeautifulSoup
+from objects import Book
+from store import save_to_csv
 
-def wiki_header(url):
-  response = requests.get(url)
-  page = BeautifulSoup(response.text, 'html.parser')
-  container = page.find('nav', class_='vector-toc-landmark')
-  title = container.find('h1')
-  print(title)  # => Заголовок статьи
-
-wiki_header('https://en.wikipedia.org/wiki/Operating_system')
+book = Book()
+book.upc = '123'
+book.scrape_url = 'scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html'
+save_to_csv([book], 'test.csv')

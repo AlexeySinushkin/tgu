@@ -5,12 +5,14 @@ from objects import Book
 import requests
 from bs4 import BeautifulSoup
 import re
+import logging
 
 
 def parse_book(url): # -> book | None
   try:
     book = Book()
     response = requests.get(url)
+    response.raise_for_status()
     soup = BeautifulSoup(response.text, 'html.parser')
     book_container = soup.find('article', attrs={'class': 'product_page'})
     extra_info_table = book_container.find('table', attrs={'class': 'table-striped'})
@@ -38,10 +40,9 @@ def parse_book(url): # -> book | None
     product_description = book_container.find('div', attrs={'id': 'product_description'})
     book.description = product_description.find_next_sibling().text
 
-    print(book.to_string())
     return book
   except Exception  as e:
-    print(e)
+    print(f"Произошла ошибка: {url} {e}")
   return None
 
 def parse_price(money_text): # -> number | None
