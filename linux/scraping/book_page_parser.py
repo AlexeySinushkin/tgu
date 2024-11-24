@@ -35,6 +35,9 @@ def parse_book(url): # -> book | None
     name_container = book_container.find('div', attrs={'class': 'product_main'})
     book.name = name_container.h1.text
 
+    price_container = name_container.find('p', attrs={'class': 'price_color'})
+    book.price = parse_price(price_container.text)
+
     rating_container = book_container.find('p', attrs={'class', 'star-rating'})
     book.rating = parse_rating(rating_container.attrs['class'])
 
