@@ -4,7 +4,7 @@ import logging
 
 from store import save_to_csv
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 base_path = 'https://books.toscrape.com/'
@@ -17,7 +17,7 @@ pages_count = 2 #10000
 
 # на первом этапе все книги держим в ОЗУ. В реальном проекте надо после парсинга каждой
 # страницы сохранять в БД и выполнять анализ аггрегирующими запросами SQL
-books = {}
+books_map = {}
 for page_num in range(1, pages_count):
     logging.info(f'Начало парсинга списска книг на {page_num} странице ')
     book_links = parse_page(f'{base_path}catalogue/page-{page_num}.html')
@@ -29,12 +29,11 @@ for page_num in range(1, pages_count):
         book = parse_book(book_link)
         if not book is None:
             # Дубликаты убираем с помощью Map
-            books[book.upc] = book
+            books_map[book.upc] = book
             logging.debug(book.to_string())
-            book.scrape_url = book_link
         else:
             logging.warning(f'Не удалось загрузить книгу по адресу {book_link}')
 
 # Выведите основные статистики по числовым данным...
-print(f'Количество книг {len(books)}')
-save_to_csv(books, 'books.csv')
+print(f'Количество книг {len(books_map)}')
+save_to_csv(books_map.values(), 'books.csv')

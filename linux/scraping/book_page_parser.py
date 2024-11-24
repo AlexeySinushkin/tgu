@@ -10,9 +10,10 @@ import logging
 
 def parse_book(url): # -> book | None
   try:
-    book = Book()
     response = requests.get(url)
     response.raise_for_status()
+    book = Book()
+    book.scrape_url = url
     soup = BeautifulSoup(response.text, 'html.parser')
     book_container = soup.find('article', attrs={'class': 'product_page'})
     extra_info_table = book_container.find('table', attrs={'class': 'table-striped'})
@@ -35,14 +36,14 @@ def parse_book(url): # -> book | None
     book.name = name_container.h1.text
 
     rating_container = book_container.find('p', attrs={'class', 'star-rating'})
-    book.rating = parse_rating(rating_container.attrs)
+    book.rating = parse_rating(rating_container.attrs['class'])
 
     product_description = book_container.find('div', attrs={'id': 'product_description'})
     book.description = product_description.find_next_sibling().text
 
     return book
   except Exception  as e:
-    print(f"Произошла ошибка: {url} {e}")
+    logging.error(f"Произошла ошибка: {url} {e}")
   return None
 
 def parse_price(money_text): # -> number | None

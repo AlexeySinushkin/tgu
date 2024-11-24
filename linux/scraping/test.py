@@ -1,7 +1,9 @@
+from book_page_parser import parse_book
 from objects import Book
 from store import save_to_csv
 
-book = Book()
-book.upc = '123'
-book.scrape_url = 'scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html'
+book_url = 'https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html'
+# экранизация)) https://youtu.be/ch8SOTvG5dw?list=PL6813019FB9802C52&t=4
+book = parse_book(book_url)
+assert book.rating == 1
 save_to_csv([book], 'test.csv')
