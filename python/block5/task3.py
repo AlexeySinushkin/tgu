@@ -6,7 +6,7 @@ import pandas as pd
 from task2 import get_students
 
 df = get_students()
-age = pd.Series(range(15, 20))
+age = pd.Series(range(16, 21))
 df['Возраст'] = age
 
 print(df.head(1))
