@@ -2,7 +2,6 @@ import numpy as np #для матричных вычислений
 import pandas as pd #для анализа и предобработки данных
 import matplotlib.pyplot as plt #для визуализации
 import seaborn as sns #для визуализации
-from fontTools.merge.util import equal
 from sklearn import linear_model #линейные модели
 from sklearn import metrics #метрики
 #%matplotlib inline
@@ -68,24 +67,6 @@ ax.set_ylabel("процент населения с низким статусо�
 ax.legend(facecolor='white', fontsize=11)  # легенда
 #plt.show()
 
-new_data = {
-'CRIM':         [0.35114],
-'ZN':           [0.00000],
-'INDUS':        [7.38000],
-'CHAS':         [0.00000],
-'NOX':          [0.49300],
-'RM':          [6.04100],
-'AGE':         [49.90000],
-'DIS':          [4.72110],
-'RAD':         [5.00000],
-'TAX':        [287.00000],
-'PTRATIO':     [19.60000],
-'B':          [396.90000],
-'LSTAT':        [7.70000]
-}
-
-new_df = pd.DataFrame(data=new_data)
-
 #Создаём объект класса LinearRegression
 lr_lstat = linear_model.LinearRegression()
 #Обучаем модель — ищем параметры по МНК
@@ -103,6 +84,25 @@ y = boston_data['MEDV']
 lr_full = linear_model.LinearRegression()
 #Обучаем модель — ищем параметры по МНК
 lr_full.fit(X, y)
+
+
+new_data = {
+'CRIM':         [0.35114],
+'ZN':           [0.00000],
+'INDUS':        [7.38000],
+'CHAS':         [0.00000],
+'NOX':          [0.49300],
+'RM':          [6.04100],
+'AGE':         [49.90000],
+'DIS':          [4.72110],
+'RAD':         [5.00000],
+'TAX':        [287.00000],
+'PTRATIO':     [19.60000],
+'B':          [396.90000],
+'LSTAT':        [7.70000]
+}
+
+new_df = pd.DataFrame(data=new_data)
 print(lr_full.predict(new_df))
 
 
