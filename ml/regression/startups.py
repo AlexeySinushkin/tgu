@@ -21,4 +21,6 @@ print('wn: {}'.format(lr_lstat.coef_))
 
 Y_PREDICT = lr_lstat.predict(data[features])
 errors = (Y - Y_PREDICT)/Y*100
-print(errors)
+print(errors.head())
+mape = errors.abs().sum()/len(errors)
+print(f'MAPE (Mean Absolute Percent Error) {mape}')
