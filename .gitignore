@@ -15,4 +15,4 @@ python/block1/high_earners.txt
 /python/block2.9/task9_test
 /linux/scraping/__pycache__
 */scraping/*.csv
-*.bak
+*.pyc
