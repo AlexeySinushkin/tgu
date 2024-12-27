@@ -135,16 +135,27 @@ def apply_pipeline(img):
   return img_hyst
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-  image = cv2.imread("1.png")
+def show_1():
+  image = cv2.imread("images/1.png")
   red = to_red(image)
-  green = to_green(image)
-  blue = to_blue(image)
-
   red = apply_pipeline(red)
   imshow(red)
-  # green = apply_pipeline(green)
-  # blue = apply_pipeline(blue)
-  #imshow(red | green | blue)
+
+def show_street():
+  image = cv2.imread("images/street.jpg")
+  image = to_grayscale(image)
+  image = apply_pipeline(image)
+  imshow(image)
+
+def show_stadium():
+  image = cv2.imread("images/stadium.jpg")
+  image = to_grayscale(image)
+  image = apply_pipeline(image)
+  imshow(image)
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+  show_1()
+  show_street()
+  show_stadium()
 
