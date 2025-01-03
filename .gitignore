@@ -16,3 +16,4 @@ python/block1/high_earners.txt
 /linux/scraping/__pycache__
 */scraping/*.csv
 *.pyc
+ml/.ipynb_checkpoints/домашнее_задание-checkpoint.ipynb
