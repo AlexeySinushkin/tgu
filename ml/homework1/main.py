@@ -58,5 +58,18 @@ print(df_dummies.dtypes)
 def count_plot():
     sns.countplot(data=df, x='Revenue')
     plt.show()
-
 #count_plot()
+
+
+#Разделите набор данных на матрицу наблюдений X и вектор ответов y:
+X = df_dummies.drop('Revenue', axis=1)
+y = df_dummies['Revenue']
+X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, random_state=42, test_size=0.2, shuffle=True)
+
+december_train = X_train[X_train['Month_Dec'] == True].count()['Month_Dec']
+december_test = X_test[X_test['Month_Dec'] == True].count()['Month_Dec']
+#убеждаемся, что данные за декабрь попали как в тест, так и в трейн
+print(f"Декабрьских сессий в трейне {december_train} и в тесте {december_test}")
+
+#Чему равно количество сессий на сайте в тренировочной выборке?
+print(f"всего данных трейн {y_train.count()} тест {y_test.count()}")
