@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt #для визуализации
 import seaborn as sns #для визуализации
 from pandas.core.util.numba_ import get_jit_arguments
 
-from sklearn import metrics #метрики
+from sklearn import metrics, preprocessing, linear_model  # метрики
 from sklearn import model_selection #методы разделения и валидации
 from sklearn import ensemble #ансамбли
 
@@ -67,11 +67,15 @@ def show_heat_map():
     plt.show()
 
 #show_heat_map()
-# По heatmap видимо что нет ярко выраженных признаков по которым можно было бы обучать модель -
-# придется обучать по всем - использовать случайный лес, так как
+# По heatmap видимо что признаки Administrative_Duration, Informational, Informational_Duration, ProductRelated, ProductRelated_Duration -
+# коррелируют между собой плюс минус одинаково, что приведет нас к мультиколлинеарности при использовании линейной или пол. регрессии
+# Будем использовать Случайный лес
 # Суть этого метода заключается в том, что каждая модель обучается не на всех признаках, а только на части из них.
 # Такой подход позволяет уменьшить коррелированность между ответами деревьев и сделать их независимыми друг от друга.
 
+# Также видно что некоторые аттрибуты слабо коррелируют по отношению к целевому признаку
+# Удаляем те, что ниже 0.02
+df_dummies = df_dummies.drop(['OperatingSystems', 'Browser', 'TrafficType', 'Month_Aug', 'Month_Jul', 'VisitorType_Other'], axis=1)
 
 #Разделите набор данных на матрицу наблюдений X и вектор ответов y:
 X = df_dummies.drop('Revenue', axis=1)
@@ -85,3 +89,65 @@ print(f"Декабрьских сессий в трейне {december_train} и 
 
 #Чему равно количество сессий на сайте в тренировочной выборке?
 print(f"всего данных трейн {y_train.count()} тест {y_test.count()}")
+
+#Производим нормализацию данных с помощью min-max нормализации
+scaler = preprocessing.MinMaxScaler()
+scaler.fit(X_train)
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+#Создаем объект класса логистическая регрессия
+log_reg = linear_model.LogisticRegression(
+    solver='sag', #алгоритм оптимизации
+    random_state=1, #генератор случайных чисел
+    max_iter=1000 #количество итераций на сходимость
+)
+#Обучаем модель, минимизируя logloss
+log_reg.fit(X_train_scaled, y_train)
+
+#Делаем предсказание для тренировочной выборки
+y_train_pred = log_reg.predict(X_train_scaled)
+#Вывод отчет о метриках классификации
+print(metrics.classification_report(y_train, y_train_pred))
+#Делаем предсказание для тестовой выборки
+y_test_pred = log_reg.predict(X_test_scaled)
+#Вывод отчет о метриках классификации
+print(metrics.classification_report(y_test, y_test_pred))
+
+def print_recall_vs_precision_vs_f1():
+    #Нас интересует только вероятность класса (второй столбец)
+    y_test_proba_pred = log_reg.predict_proba(X_test_scaled)[:, 1]
+    #Для удобства завернем numpy-массив в pandas Series
+    y_test_proba_pred = pd.Series(y_test_proba_pred)
+    #Создадим списки, в которых будем хранить значения метрик
+    recall_scores = []
+    precision_scores = []
+    f1_scores = []
+    #Сгенерируем набор вероятностных порогов в диапазоне от 0.1 до 1
+    thresholds = np.arange(0.1, 1, 0.05)
+    #В цикле будем перебирать сгенерированные пороги
+    for threshold in thresholds:
+        #В противном случае - к классу 0
+        y_test_pred = y_test_proba_pred.apply(lambda x: 1 if x>threshold else 0)
+        #Считаем метрики и добавляем их в списки
+        recall_scores.append(metrics.recall_score(y_test, y_test_pred))
+        precision_scores.append(metrics.precision_score(y_test, y_test_pred))
+        f1_scores.append(metrics.f1_score(y_test, y_test_pred))
+
+    #Визуализируем метрики при различных threshold
+    fig, ax = plt.subplots(figsize=(10, 4)) #фигура + координатная плоскость
+    #Строим линейный график зависимости recall от threshold
+    ax.plot(thresholds, recall_scores, label='Recall')
+    #Строим линейный график зависимости precision от threshold
+    ax.plot(thresholds, precision_scores, label='Precision')
+
+    #Строим линейный график зависимости F1 от threshold
+    ax.plot(thresholds, f1_scores, label='F1-score')
+    #Даем графику название и подписи осям
+    ax.set_title('Recall/Precision dependence on the threshold')
+    ax.set_xlabel('Probability threshold')
+    ax.set_ylabel('Score')
+    ax.legend()
+    plt.show()
+
+print_recall_vs_precision_vs_f1()
