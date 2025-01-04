@@ -96,58 +96,40 @@ scaler.fit(X_train)
 X_train_scaled = scaler.transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-#Создаем объект класса логистическая регрессия
-log_reg = linear_model.LogisticRegression(
-    solver='sag', #алгоритм оптимизации
-    random_state=1, #генератор случайных чисел
-    max_iter=1000 #количество итераций на сходимость
+#Создаем объект класса случайный лес
+rf = ensemble.RandomForestClassifier(
+    random_state=42
 )
-#Обучаем модель, минимизируя logloss
-log_reg.fit(X_train_scaled, y_train)
+def fit_and_print_f1(model):
+    #Обучаем модель
+    model.fit(X_train, y_train)
+    #Выводим значения метрики
+    y_train_pred = model.predict(X_train)
+    print('Train: {:.2f}'.format(metrics.f1_score(y_train, y_train_pred)))
+    y_test_pred = model.predict(X_test)
+    print('Test: {:.2f}'.format(metrics.f1_score(y_test, y_test_pred)))
+fit_and_print_f1(rf)
 
-#Делаем предсказание для тренировочной выборки
-y_train_pred = log_reg.predict(X_train_scaled)
-#Вывод отчет о метриках классификации
-print(metrics.classification_report(y_train, y_train_pred))
-#Делаем предсказание для тестовой выборки
-y_test_pred = log_reg.predict(X_test_scaled)
-#Вывод отчет о метриках классификации
-print(metrics.classification_report(y_test, y_test_pred))
 
-def print_recall_vs_precision_vs_f1():
-    #Нас интересует только вероятность класса (второй столбец)
-    y_test_proba_pred = log_reg.predict_proba(X_test_scaled)[:, 1]
-    #Для удобства завернем numpy-массив в pandas Series
-    y_test_proba_pred = pd.Series(y_test_proba_pred)
-    #Создадим списки, в которых будем хранить значения метрик
-    recall_scores = []
-    precision_scores = []
-    f1_scores = []
-    #Сгенерируем набор вероятностных порогов в диапазоне от 0.1 до 1
-    thresholds = np.arange(0.1, 1, 0.05)
-    #В цикле будем перебирать сгенерированные пороги
-    for threshold in thresholds:
-        #В противном случае - к классу 0
-        y_test_pred = y_test_proba_pred.apply(lambda x: 1 if x>threshold else 0)
-        #Считаем метрики и добавляем их в списки
-        recall_scores.append(metrics.recall_score(y_test, y_test_pred))
-        precision_scores.append(metrics.precision_score(y_test, y_test_pred))
-        f1_scores.append(metrics.f1_score(y_test, y_test_pred))
+rf5 = ensemble.RandomForestClassifier(
+    n_estimators=200,
+    max_depth=5,
+    min_samples_leaf=5,
+    random_state=42
+)
+rf7 = ensemble.RandomForestClassifier(
+    n_estimators=200,
+    max_depth=7,
+    min_samples_leaf=5,
+    random_state=42
+)
+rf12 = ensemble.RandomForestClassifier(
+    n_estimators=200,
+    max_depth=12,
+    min_samples_leaf=5,
+    random_state=42
+)
 
-    #Визуализируем метрики при различных threshold
-    fig, ax = plt.subplots(figsize=(10, 4)) #фигура + координатная плоскость
-    #Строим линейный график зависимости recall от threshold
-    ax.plot(thresholds, recall_scores, label='Recall')
-    #Строим линейный график зависимости precision от threshold
-    ax.plot(thresholds, precision_scores, label='Precision')
-
-    #Строим линейный график зависимости F1 от threshold
-    ax.plot(thresholds, f1_scores, label='F1-score')
-    #Даем графику название и подписи осям
-    ax.set_title('Recall/Precision dependence on the threshold')
-    ax.set_xlabel('Probability threshold')
-    ax.set_ylabel('Score')
-    ax.legend()
-    plt.show()
-
-print_recall_vs_precision_vs_f1()
+fit_and_print_f1(rf5)
+fit_and_print_f1(rf7)
+fit_and_print_f1(rf12)
