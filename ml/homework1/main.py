@@ -2,6 +2,7 @@ import numpy as np #для матричных вычислений
 import pandas as pd #для анализа и предобработки данных
 import matplotlib.pyplot as plt #для визуализации
 import seaborn as sns #для визуализации
+from fontTools.ttLib.tables.S_V_G_ import doc_index_entry_format_0Size
 from pandas.core.util.numba_ import get_jit_arguments
 
 from sklearn import metrics, preprocessing, linear_model  # метрики
@@ -110,7 +111,7 @@ y_test_pred = rf.predict(X_test)
 print('Test: {:.2f}'.format(metrics.f1_score(y_test, y_test_pred)))
 
 
-def random_forest_train(model, X, y):
+def random_forest_train(model, X, y, scoring):
     # Создаём объект кросс-валидатора KFold
     kf = model_selection.StratifiedKFold(n_splits=5)
     # Считаем метрики на кросс-валидации k-fold
@@ -119,12 +120,12 @@ def random_forest_train(model, X, y):
         X=X,  # матрица наблюдений X
         y=y,  # вектор ответов y
         cv=kf,  # кросс-валидатор
-        scoring='f1',  # метрика
+        scoring=scoring,  # метрика
         return_train_score=True  # подсчёт метрики на тренировочных фолдах
     )
     #print(cv_metrics)
-    print('Train k-fold mean accuracy: {:.2f}'.format(np.mean(cv_metrics['train_score'])))
-    print('Valid k-fold mean accuracy: {:.2f}'.format(np.mean(cv_metrics['test_score'])))
+    print('Train k-fold mean {}: {:.2f}'.format(scoring, np.mean(cv_metrics['train_score'])))
+    print('Valid k-fold mean {}: {:.2f}'.format(scoring, np.mean(cv_metrics['test_score'])))
 
 def plot_learning_curve(model, X, y, ax=None, title=""):
     kf = model_selection.StratifiedKFold(n_splits=5)
@@ -179,12 +180,37 @@ rf12 = ensemble.RandomForestClassifier(
 print('Train:\n', y_train.value_counts(normalize=True), sep='')
 print('Valid:\n', y_test.value_counts(normalize=True), sep='')
 
-#random_forest_train(rf5, X_train_scaled, y_train)
-#random_forest_train(rf7, X_train_scaled, y_train)
-#random_forest_train(rf12, X_train_scaled, y_train)
+def plot_learning_curves():
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4)) #фигура + 3 координатных плоскости
+    plot_learning_curve(rf5, X_train_scaled, y_train, ax=axes[0], title='Глубина 5')
+    plot_learning_curve(rf7, X_train_scaled, y_train, ax=axes[1], title='Глубина 7')
+    plot_learning_curve(rf12, X_train_scaled, y_train, ax=axes[2], title='Глубина 12')
+    plt.show()
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 4)) #фигура + 3 координатных плоскости
-plot_learning_curve(rf5, X_train_scaled, y_train, ax=axes[0], title='Глубина 5')
-plot_learning_curve(rf7, X_train_scaled, y_train, ax=axes[1], title='Глубина 7')
-plot_learning_curve(rf12, X_train_scaled, y_train, ax=axes[2], title='Глубина 12')
-plt.show()
+#plot_learning_curves()
+random_forest_train(rf12, X_train_scaled, y_train, 'accuracy')
+
+#Выводим значения метрики
+rf12.fit(X_train_scaled, y_train)
+y_test_pred = rf12.predict(X_test_scaled)
+print('F1 on test: {:.2f}'.format(metrics.f1_score(y_test, y_test_pred)))
+
+#Рассчитайте значение метрики F1 для посетителей, завершивших сессию без покупки товара?
+# На предсказание надо подать данные, где есть сессии только лишь без покупки
+df_no_revenue = df_dummies.copy()
+df_no_revenue = df_no_revenue[df_no_revenue['Revenue'] == False]
+print(f"Количество сессий без покупки {df_no_revenue.shape[0]}")
+X_no_revenue = df_no_revenue.drop('Revenue', axis=1)
+y_no_revenue = df_no_revenue['Revenue']
+X_no_revenue_scaled = scaler.transform(X_no_revenue)
+y_no_revenue_pred = rf12.predict(X_no_revenue_scaled)
+print('F1 no revenue: {:.2f}'.format(metrics.f1_score(y_no_revenue, y_no_revenue_pred)))
+
+df_revenue = df_dummies.copy()
+df_revenue = df_revenue[df_revenue['Revenue'] == True]
+print(f"Количество сессий завершившихся покупкой {df_revenue.shape[0]}")
+X_revenue = df_revenue.drop('Revenue', axis=1)
+y_revenue = df_revenue['Revenue']
+X_revenue_scaled = scaler.transform(X_revenue)
+y_revenue_pred = rf12.predict(X_revenue_scaled)
+print('F1 revenue: {:.2f}'.format(metrics.f1_score(y_revenue, y_revenue_pred)))
