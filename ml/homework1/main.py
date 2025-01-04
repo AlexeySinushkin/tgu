@@ -126,6 +126,32 @@ def random_forest_train(model, X, y):
     print('Train k-fold mean accuracy: {:.2f}'.format(np.mean(cv_metrics['train_score'])))
     print('Valid k-fold mean accuracy: {:.2f}'.format(np.mean(cv_metrics['test_score'])))
 
+def plot_learning_curve(model, X, y, ax=None, title=""):
+    kf = model_selection.StratifiedKFold(n_splits=5)
+    train_sizes, train_scores, valid_scores = model_selection.learning_curve(
+        estimator=model,  # модель
+        X=X,  # матрица наблюдений X
+        y=y,  # вектор ответов y
+        cv=kf,  # кросс-валидатор
+        scoring='f1'  # метрика
+    )
+    # Вычисляем среднее значение по фолдам для каждого набора данных
+    train_scores_mean = np.mean(train_scores, axis=1)
+    valid_scores_mean = np.mean(valid_scores, axis=1)
+    # Строим кривую обучения по метрикам на тренировочных фолдах
+    ax.plot(train_sizes, train_scores_mean, label="Train")
+    # Строим кривую обучения по метрикам на валидационных фолдах
+    ax.plot(train_sizes, valid_scores_mean, label="Valid")
+    # Даём название графику и подписи осям
+    ax.set_title("Learning curve: {}".format(title))
+    ax.set_xlabel("Train data size")
+    ax.set_ylabel("Score")
+    # Устанавливаем отметки по оси абсцисс
+    ax.xaxis.set_ticks(train_sizes)
+    # Устанавливаем диапазон оси ординат
+    ax.set_ylim(0, 1)
+    # Отображаем легенду
+    ax.legend()
 
 rf5 = ensemble.RandomForestClassifier(
     criterion='entropy',
@@ -149,6 +175,16 @@ rf12 = ensemble.RandomForestClassifier(
     random_state=42
 )
 
-random_forest_train(rf5, X_train_scaled, y_train)
-random_forest_train(rf7, X_train_scaled, y_train)
-random_forest_train(rf12, X_train_scaled, y_train)
+#Соотношение целевого признака в train и в test (должно быть примерно одинаковым)
+print('Train:\n', y_train.value_counts(normalize=True), sep='')
+print('Valid:\n', y_test.value_counts(normalize=True), sep='')
+
+#random_forest_train(rf5, X_train_scaled, y_train)
+#random_forest_train(rf7, X_train_scaled, y_train)
+#random_forest_train(rf12, X_train_scaled, y_train)
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4)) #фигура + 3 координатных плоскости
+plot_learning_curve(rf5, X_train_scaled, y_train, ax=axes[0], title='Глубина 5')
+plot_learning_curve(rf7, X_train_scaled, y_train, ax=axes[1], title='Глубина 7')
+plot_learning_curve(rf12, X_train_scaled, y_train, ax=axes[2], title='Глубина 12')
+plt.show()
