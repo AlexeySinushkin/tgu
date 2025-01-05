@@ -111,7 +111,7 @@ y_test_pred = rf.predict(X_test)
 print('Test: {:.2f}'.format(metrics.f1_score(y_test, y_test_pred)))
 
 
-def random_forest_train(model, X, y, scoring):
+def print_metric(model, X, y, scoring):
     # Создаём объект кросс-валидатора KFold
     kf = model_selection.StratifiedKFold(n_splits=5)
     # Считаем метрики на кросс-валидации k-fold
@@ -188,12 +188,13 @@ def plot_learning_curves():
     plt.show()
 
 #plot_learning_curves()
-random_forest_train(rf12, X_train_scaled, y_train, 'accuracy')
+print_metric(rf12, X_train_scaled, y_train, 'accuracy')
 
 #Выводим значения метрики
 rf12.fit(X_train_scaled, y_train)
 y_test_pred = rf12.predict(X_test_scaled)
 print('F1 on test: {:.2f}'.format(metrics.f1_score(y_test, y_test_pred)))
+print(metrics.classification_report(y_test, y_test_pred))
 
 #Рассчитайте значение метрики F1 для посетителей, завершивших сессию без покупки товара?
 # На предсказание надо подать данные, где есть сессии только лишь без покупки
@@ -213,4 +214,65 @@ X_revenue = df_revenue.drop('Revenue', axis=1)
 y_revenue = df_revenue['Revenue']
 X_revenue_scaled = scaler.transform(X_revenue)
 y_revenue_pred = rf12.predict(X_revenue_scaled)
+print('F1 revenue: {:.2f}'.format(metrics.f1_score(y_revenue, y_revenue_pred)))
+
+def print_pr(model, X, y):
+    kf = model_selection.StratifiedKFold(n_splits=5)
+    # Делаем предсказание вероятностей на кросс-валидации
+    y_cv_proba_pred = model_selection.cross_val_predict(model, X, y, cv=kf, method='predict_proba')
+    # Выделяем столбец с вероятностями для класса 1
+    y_cv_proba_pred = y_cv_proba_pred[:, 1]
+    # Вычисляем координаты PR-кривой
+    precision, recall, thresholds = metrics.precision_recall_curve(y_train, y_cv_proba_pred)
+    print('Thresholds:', thresholds[:5])
+    print('Precision scores:', precision[:5])
+    print('Recall scores:', recall[:5])
+
+    # Вычисляем F1-меру при различных threshold
+    f1_scores = (2 * precision * recall) / (precision + recall)
+    # Определяем индекс максимума
+    idx = np.argmax(f1_scores)
+    print('Best threshold = {:.2f}, F1-Score = {:.2f}'.format(thresholds[idx], f1_scores[idx]))
+
+    # Строим PR-кривую
+    fig, ax = plt.subplots(figsize=(10, 5))  # фигура + координатная плоскость
+    # Строим линейный график зависимости precision от recall
+    ax.plot(recall, precision, label='PR')
+    # Отмечаем точку максимума F1
+    ax.scatter(recall[idx], precision[idx], marker='o', color='black', label='Best F1 score')
+    # Даем графику название и подписи осям
+    ax.set_title('Precision-recall curve')
+    ax.set_xlabel('Recall')
+    ax.set_ylabel('Precision')
+    # Отображаем легенду
+    ax.legend()
+
+#print_pr(rf12, X_train_scaled, y_train)
+#plt.show()
+
+#Задаём оптимальный порог вероятностей
+threshold_opt = 0.37
+y_test_pred_proba = rf12.predict_proba(X_test_scaled)[:, 1]
+y_test_pred = y_test_pred_proba > threshold_opt
+#Считаем метрики
+print(metrics.classification_report(y_test, y_test_pred))
+
+df_no_revenue = df_dummies.copy()
+df_no_revenue = df_no_revenue[df_no_revenue['Revenue'] == False]
+print(f"Количество сессий без покупки {df_no_revenue.shape[0]}")
+X_no_revenue = df_no_revenue.drop('Revenue', axis=1)
+y_no_revenue = df_no_revenue['Revenue']
+X_no_revenue_scaled = scaler.transform(X_no_revenue)
+y_no_revenue_pred = rf12.predict_proba(X_no_revenue_scaled)[:, 1]
+y_no_revenue_pred = y_no_revenue_pred > threshold_opt
+print('F1 no revenue: {:.2f}'.format(metrics.f1_score(y_no_revenue, y_no_revenue_pred)))
+
+df_revenue = df_dummies.copy()
+df_revenue = df_revenue[df_revenue['Revenue'] == True]
+print(f"Количество сессий завершившихся покупкой {df_revenue.shape[0]}")
+X_revenue = df_revenue.drop('Revenue', axis=1)
+y_revenue = df_revenue['Revenue']
+X_revenue_scaled = scaler.transform(X_revenue)
+y_revenue_pred = rf12.predict_proba(X_revenue_scaled)[:, 1]
+y_revenue_pred = y_revenue_pred > threshold_opt
 print('F1 revenue: {:.2f}'.format(metrics.f1_score(y_revenue, y_revenue_pred)))
