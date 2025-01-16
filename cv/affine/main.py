@@ -41,7 +41,17 @@ def warp_affine(image, M, output_shape):
 def get_image():
     return plt.imread("street_2.jpeg")
 
-def rotate180():
+def show_images(images):
+    plt.subplot(121)
+    plt.title("Original")
+    plt.imshow(images[0])
+    plt.subplot(122)
+    plt.title("Transformed")
+    plt.imshow(images[1])
+    #plt.tight_layout()
+    plt.show()
+
+def rotate_180():
     # загрузка картинки
     image = get_image()
     # угол поворота картинки
@@ -62,19 +72,11 @@ def rotate180():
 
     # Размер выходного изображения
     shape=(image.shape[0], image.shape[1], image.shape[2])
-
     # применяем афинное преобразование
     result = warp_affine(image, M, shape)
-    plt.subplot(121)
-    plt.title("Original")
-    plt.imshow(image)
-    plt.subplot(122)
-    plt.title("Transformed")
-    plt.imshow(result)
-    #plt.tight_layout()
-    plt.show()
+    return image, result
 
-def rotate90CCW():
+def rotate_90_CCW():
     # загрузка картинки
     image = get_image()
     height, width, _ = image.shape
@@ -91,13 +93,42 @@ def rotate90CCW():
 
     # применяем афинное преобразование
     result = warp_affine(image, M, shape)
-    plt.subplot(121)
-    plt.title("Original")
-    plt.imshow(image)
-    plt.subplot(122)
-    plt.title("Transformed")
-    plt.imshow(result)
-    #plt.tight_layout()
-    plt.show()
+    return image, result
 
-rotate90CCW()
+def reflection_OY():
+    # загрузка картинки
+    image = get_image()
+    height, width, _ = image.shape
+
+    # задаем матрицу транфсормации
+    M = np.float32(
+        [[-1, 0, width],
+        [0, 1, 0],
+        [0,0,1]],)
+
+    # Размер выходного изображения
+    shape=(height, width, image.shape[2])
+
+    # применяем афинное преобразование
+    result = warp_affine(image, M, shape)
+    return image, result
+
+def enlarge_x2():
+    # загрузка картинки
+    image = get_image()
+    height, width, _ = image.shape
+
+    # задаем матрицу транфсормации
+    M = np.float32(
+        [[2, 0, 0],
+        [0, 2, 0],
+        [0,0,1]],)
+
+    # Размер выходного изображения
+    shape=(height*2, width*2, image.shape[2])
+
+    # применяем афинное преобразование
+    result = warp_affine(image, M, shape)
+    return image, result
+
+show_images(enlarge_x2())
