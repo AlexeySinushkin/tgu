@@ -1,13 +1,13 @@
-from datetime import datetime
+
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from pydantic.v1 import BaseModel
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
 
-from event_store import InMemoryEventStore
+from utils.date_utils import parse_date, format_date
+from dao.abstract_event_store import InMemoryEventStore
 from rest_model.bell_event_dto import  from_event
 
 app = FastAPI()
@@ -18,21 +18,17 @@ event_store = InMemoryEventStore()
 
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):
-    target_date = request.query_params.get("date")
-    date = None
-    if target_date is None:
-        date = datetime.now().strftime("%d.%m.%Y")
-    else:
-        date = target_date
+    target_date = parse_date(request.query_params.get("date"))
 
-    events =  event_store.get_last_events()
+    events =  event_store.get_events(target_date)
     events = list(map(lambda e: from_event(e), events))
 
     if len(events) == 0:
-        return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": 0, "date": date})
+        return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": 0, "date": format_date(target_date)})
     else:
         events[0].active='active'
-        return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": events[0].id, "date": date})
+        return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": events[0].id, "date": format_date(target_date)})
+
 
 
 @app.get("/view_event/{event_id}", response_class=HTMLResponse)
