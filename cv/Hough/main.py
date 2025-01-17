@@ -2,7 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import imread
-# version=4.10.0
 import cv2
 
 
@@ -60,17 +59,37 @@ def highlightColour(path, target_colour, threshold=40):
     # Морфологическая операция закрытия
     kernel = np.ones((5, 5), np.uint8)
     closing = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
-    cv2.imshow("Изображение", closing)
+    #cv2.imshow("Изображение", closing)
+    return closing
 
+def cv2_show_image(image):
+    # cv2.imshow("Изображение", image)
+    while True:
+        key = cv2.waitKey(1)
+        if key == 27:
+            cv2.destroyAllWindows()
 
+image_path = "balls.png"
 # Находим круги с помощью алгоритма Хаффа
-image, circle_colours = HoughCircleTransform("balls.png")
-# cv2.imshow("Изображение с найденными кругами", image)
+image, circle_colours = HoughCircleTransform(image_path)
+
 
 # Теперь пытаемся найти те-же самые круги, зная их цвет
-highlightColour("balls.png", circle_colours[1])
+image0 = highlightColour(image_path, circle_colours[0])
+image1 = highlightColour(image_path, circle_colours[1])
+image2 = highlightColour(image_path, circle_colours[2])
+image3 = highlightColour(image_path, circle_colours[3], threshold=60)
+image4 = highlightColour(image_path, circle_colours[4], threshold=50)
+image5 = highlightColour(image_path, circle_colours[5], threshold=65)
 
-while True:
-    key = cv2.waitKey(1)
-    if key == 27:
-        cv2.destroyAllWindows()
+fig, axes = plt.subplots(3, 2, figsize=(20, 60))
+axes[0, 0].imshow(image0)
+axes[0, 1].imshow(image1)
+axes[1, 0].imshow(image2)
+axes[1, 1].imshow(image3)
+axes[2, 0].imshow(image4)
+axes[2, 1].imshow(image5)
+# plt.tight_layout()
+plt.show()
+
+
