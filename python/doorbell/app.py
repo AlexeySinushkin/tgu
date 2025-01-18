@@ -1,5 +1,4 @@
-
-
+import cv2
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -7,6 +6,8 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 from starlette.templating import Jinja2Templates
 
+from human_detection_service import EventProducerService
+from model.search_area import SearchArea
 from utils.date_utils import parse_date, format_date
 from dao.in_memory_test_event_store import InMemoryEventStore
 from rest_model.bell_event_dto import from_event, from_dataframe
@@ -14,8 +15,10 @@ from rest_model.bell_event_dto import from_event, from_dataframe
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 event_store = InMemoryEventStore()
-
-
+search_area = SearchArea(0.25, 0, 0.85, 0.5)
+test_video_stream = cv2.VideoCapture("./test/test_video.mp4")
+service = EventProducerService(test_video_stream, search_area, event_store)
+service.start()
 
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):
