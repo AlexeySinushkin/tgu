@@ -8,7 +8,7 @@ from dao.test_image_dao import load_image
 from model.bell_event import BellEvent
 from model.image_fs import EventImageFs
 from utils.date_utils import get_start_end_pd, date_format
-from config import settings
+
 
 class InMemoryEventStore(AbstractEventStore):
     def __init__(self):

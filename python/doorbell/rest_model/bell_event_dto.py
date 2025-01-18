@@ -1,9 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
-from functools import cached_property
-
 import pandas as pd
-from pydantic import computed_field
 from pydantic.v1 import BaseModel
 
 from model.bell_event import BellEvent
