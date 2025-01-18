@@ -4,7 +4,9 @@ import pandas as pd
 
 date_format = "%d.%m.%Y"
 
-def parse_date(date_string: str) -> datetime:
+def parse_date(date_string: str | None) -> datetime:
+    if date_string is None:
+        return datetime.now()
     try:
         return datetime.strptime(date_string, date_format)
     except ValueError:

@@ -18,6 +18,9 @@
         -moz-user-select: none;
         user-select: none;
       }
+      .active {
+        color: red
+      }
 
       @media (min-width: 768px) {
         .bd-placeholder-img-lg {
@@ -54,7 +57,7 @@ $('#datepicker').datepicker({uiLibrary: 'bootstrap5', format: 'dd.mm.yyyy'});
         <ul class="nav flex-column">
             {% for event in events %}
           <!--nav-link active-->
-            <li class="nav-item {{ event.active }}">
+            <li class="nav-item {{ event.css_class }}">
               <a class="nav-link" aria-current="page" href="/?event_id={{ event.id }}">
                 {{event.name}}
               </a>

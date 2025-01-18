@@ -1,6 +1,6 @@
+import unittest
 from datetime import datetime, timedelta
 import pandas as pd
-import matplotlib.pyplot as plt
 from dao.abstract_event_store import AbstractEventStore
 from model.bell_event import BellEvent
 from model.image import EventImage
@@ -59,3 +59,15 @@ class InMemoryEventStore(AbstractEventStore):
         df = self.images
         df = df[df['event_id']==event_id]
         return df
+
+
+class TestInMemoryEventStoreCrud(unittest.TestCase):
+  def test_create(self):
+    store = InMemoryEventStore()
+    image = "new-image.png"
+    new_event = store.create(image)
+    bell_events = store.get_events(datetime.now())
+    df = bell_events[bell_events['id']==new_event.id]
+    assert df.shape[0] == 1
+    attached_image = store.get_images(new_event.id).iloc[0]
+    assert image == attached_image.file_name
