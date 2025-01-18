@@ -1,9 +1,12 @@
+import io
 import unittest
 from datetime import datetime, timedelta
+import io
+from PIL import Image
 import pandas as pd
 from dao.abstract_event_store import AbstractEventStore
 from model.bell_event import BellEvent
-from model.image import EventImage
+from model.image_fs import EventImageFs
 from utils.date_utils import get_start_end_pd
 
 
@@ -43,7 +46,7 @@ class InMemoryEventStore(AbstractEventStore):
         event.stop_date = datetime.now()
         self.events = pd.concat([self.events, pd.DataFrame([event.to_map()])], ignore_index=True)
 
-        image = EventImage()
+        image = EventImageFs()
         image.id = self.images["id"].max()+1
         image.event_id = event.id
         image.file_name = image_file_name
@@ -55,10 +58,21 @@ class InMemoryEventStore(AbstractEventStore):
         start, end  = get_start_end_pd(date)
         return self.events[df['start_date'].ge(start) & df['start_date'].le(end)]
 
-    def get_images(self, event_id) -> [EventImage]:
+    def get_images(self, event_id) -> [EventImageFs]:
         df = self.images
         df = df[df['event_id']==event_id]
         return df
+
+    def get_main_image(self, event_id) -> io.BytesIO:
+        df = self.images
+        df = df[df['event_id'] == event_id]
+        file_name = df.iloc[0]["file_name"]
+        image = Image.open(f"./event-images/{file_name}")
+        imgio = io.BytesIO()
+        image.save(imgio, 'PNG')
+        imgio.seek(0)
+        return imgio
+
 
 
 class TestInMemoryEventStoreCrud(unittest.TestCase):

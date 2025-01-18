@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from starlette.requests import Request
+from starlette.responses import StreamingResponse
 from starlette.templating import Jinja2Templates
 
 from utils.date_utils import parse_date, format_date
@@ -41,22 +42,13 @@ async def last_events(request: Request):
 
 
 
-@app.get("/view_event/{event_id}", response_class=HTMLResponse)
-async def view_event(event_id: int):
-    if event_id is None:
-        events =  event_store.get_last_events()
-        if len(events) == 0:
-            return templates.TemplateResponse("dashboard.html", {"events": events})
-        else:
-            return templates.TemplateResponse("dashboard.html", {"events": events, "active_event_id": event_id})
-    else:
-        #TODO
-        events = event_store.get_last_events()
-        return templates.TemplateResponse("dashboard.html", {"events": events})
+@app.get("/event_main_image/{event_id}",
+            response_description="Изображение, послужившее причиной возникновения события",
+            response_class=StreamingResponse)
+def event_main_image(event_id: int):
+    imgio = event_store.get_main_image(event_id)
+    return StreamingResponse(content=imgio, media_type="image/png")
 
-@app.get("/bell_events/last_day")
-def get_bell_events():
-  return []
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8001)

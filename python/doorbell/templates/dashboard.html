@@ -70,7 +70,7 @@ $('#datepicker').datepicker({uiLibrary: 'bootstrap5', format: 'dd.mm.yyyy'});
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
       <div>
       {% if active_event_id > 0 %}
-        <img src="/main_event_image/{{ active_event_id }}" alt="Изображение, которое послужило причиной создания события {{ active_event_id }}"/>
+        <img src="/event_main_image/{{ active_event_id }}" alt="Изображение, которое послужило причиной создания события {{ active_event_id }}"/>
       {% else %}
         <h3>Событий за этот день нет</h3>
       {% endif %}
