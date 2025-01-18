@@ -6,19 +6,28 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 from starlette.templating import Jinja2Templates
 
+from dao.abstract_event_store import AbstractEventStore
 from human_detection_service import EventProducerService
 from model.search_area import SearchArea
 from utils.date_utils import parse_date, format_date
 from dao.in_memory_test_event_store import InMemoryEventStore
 from rest_model.bell_event_dto import from_dataframe
+from config import settings
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-event_store = InMemoryEventStore()
-search_area = SearchArea(0.25, 0, 0.85, 0.5)
-test_video_stream = cv2.VideoCapture("./test/test_video.mp4")
-service = EventProducerService(test_video_stream, search_area, event_store)
-#service.start()
+
+def get_implementation(test_mode:bool) -> (cv2.VideoCapture, AbstractEventStore):
+    if test_mode:
+        return cv2.VideoCapture("./test/test_video.mp4"), InMemoryEventStore()
+    else:
+        return cv2.VideoCapture(settings.get_rtsp_url()), InMemoryEventStore() #TODO sqlite
+
+stream, event_store = get_implementation(settings.test_mode)
+#search_area = SearchArea(0.25, 0, 0.85, 0.5)
+search_area = SearchArea(0.25, 0, 0.85, 0.9)
+service = EventProducerService(stream, search_area, event_store)
+service.start()
 
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):

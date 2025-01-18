@@ -4,6 +4,7 @@ from datetime import datetime
 from threading import Thread
 
 import cv2
+from anyio import sleep
 from cv2 import VideoCapture
 from matplotlib.dates import drange
 from pyparsing import Empty
@@ -26,34 +27,38 @@ class EventProducerService(threading.Thread):
     def run(self):
         frame_index = 0
         last_saved_event: BellEvent | None = None
-        while True:
-            ret, frame = self.stream.read()
-            frame_index += 1
-            if not ret:
-                break
+        try:
+            while True:
+                ret, frame = self.stream.read()
+                frame_index += 1
+                if not ret:
+                    sleep(500)
+                    continue
 
-            frame2 = cv2.resize(frame, (800, 600)) #FIXME
-            if frame_index % 10 == 0:
-                target_area = self.area.crop(frame2)
-                # detect humans in input image
-                (humans, _) = self.hog.detectMultiScale(target_area)
-                # getting no. of human detected
-                humans_count = len(humans)
-                if humans_count is not Empty:
-                    if last_saved_event is None:
-                        self.draw_rect_around_human(frame2, humans)
-                        file_name = self.save_frame(frame2)
-                        last_saved_event = self.consumer.create(file_name)
-                        print(f'new event {file_name}') #TODO Проиграть музыку
-                    else:
-                        #Расширяем правую границу события (как долго человек находился в зоне интереса)
-                        #TODO добавить еще изображений к этому событию
-                        last_saved_event.stop_date = datetime.now()
-                        self.consumer.update(last_saved_event)
-                elif last_saved_event is not None:
-                    delta = datetime.now() - last_saved_event.stop_date
-                    if delta.seconds>20:
-                        last_saved_event = None
+                frame2 = cv2.resize(frame, (800, 600)) #FIXME
+                if frame_index % 10 == 0:
+                    target_area = self.area.crop(frame2)
+                    # detect humans in input image
+                    (humans, _) = self.hog.detectMultiScale(target_area)
+                    # getting no. of human detected
+                    humans_count = len(humans)
+                    if humans_count is not Empty:
+                        if last_saved_event is None:
+                            self.draw_rect_around_human(frame2, humans)
+                            file_name = self.save_frame(frame2)
+                            last_saved_event = self.consumer.create(file_name)
+                            print(f'new event {file_name}') #TODO Проиграть музыку
+                        else:
+                            #Расширяем правую границу события (как долго человек находился в зоне интереса)
+                            #TODO добавить еще изображений к этому событию
+                            last_saved_event.stop_date = datetime.now()
+                            self.consumer.update(last_saved_event)
+                    elif last_saved_event is not None:
+                        delta = datetime.now() - last_saved_event.stop_date
+                        if delta.seconds>20:
+                            last_saved_event = None
+        finally:
+            self.stream.release()
 
 
 
