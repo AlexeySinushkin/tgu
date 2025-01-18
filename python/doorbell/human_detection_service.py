@@ -1,18 +1,16 @@
 import threading
-import uuid
+import time
 from datetime import datetime
-from threading import Thread
 
 import cv2
-from anyio import sleep
 from cv2 import VideoCapture
-from matplotlib.dates import drange
 from pyparsing import Empty
-
+from config import settings
 from dao.abstract_event_store import AbstractEventStore
+from dao.test_image_dao import save_image
 from model.bell_event import BellEvent
 from model.search_area import SearchArea
-
+import pygame.mixer as sound
 
 class EventProducerService(threading.Thread):
     def __init__(self, stream: VideoCapture, area: SearchArea, consumer: AbstractEventStore):
@@ -27,12 +25,15 @@ class EventProducerService(threading.Thread):
     def run(self):
         frame_index = 0
         last_saved_event: BellEvent | None = None
+        sound.init()
+        sound.music.load(settings.doorbell_sound_file)
+
         try:
             while True:
                 ret, frame = self.stream.read()
                 frame_index += 1
                 if not ret:
-                    sleep(500)
+                    time.sleep(1)
                     continue
 
                 frame2 = cv2.resize(frame, (800, 600)) #FIXME
@@ -47,7 +48,9 @@ class EventProducerService(threading.Thread):
                             self.draw_rect_around_human(frame2, humans)
                             file_name = self.save_frame(frame2)
                             last_saved_event = self.consumer.create(file_name)
-                            print(f'new event {file_name}') #TODO Проиграть музыку
+                            print(f'new event {file_name}')
+                            # TODO SRP move
+                            sound.music.play()
                         else:
                             #Расширяем правую границу события (как долго человек находился в зоне интереса)
                             #TODO добавить еще изображений к этому событию
@@ -75,6 +78,5 @@ class EventProducerService(threading.Thread):
             cv2.rectangle(frame, (rect_x1, rect_y1), (rect_x2, rect_y2), (0, 255, 0), 2)
 
     def save_frame(self, frame) -> str:
-        new_file_name = f"{uuid.uuid4()}.png"
-        cv2.imwrite(f"./event-images/{new_file_name}", frame)
+        new_file_name = save_image(frame)
         return new_file_name

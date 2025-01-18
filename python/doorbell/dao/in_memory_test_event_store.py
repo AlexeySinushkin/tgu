@@ -1,15 +1,14 @@
 import io
 import unittest
 from datetime import datetime, timedelta
-import io
-from PIL import Image
 import pandas as pd
 
 from dao.abstract_event_store import AbstractEventStore
+from dao.test_image_dao import load_image
 from model.bell_event import BellEvent
 from model.image_fs import EventImageFs
 from utils.date_utils import get_start_end_pd, date_format
-
+from config import settings
 
 class InMemoryEventStore(AbstractEventStore):
     def __init__(self):
@@ -82,15 +81,11 @@ class InMemoryEventStore(AbstractEventStore):
         df = self.images
         df = df[df['event_id'] == event_id]
         file_name = df.iloc[0]["file_name"]
-        image = Image.open(f"./event-images/{file_name}")
-        imgio = io.BytesIO()
-        image.save(imgio, 'PNG')
-        imgio.seek(0)
-        return imgio
+        return load_image(file_name)
 
     def update(self, event: BellEvent):
         df = self.events
-        self.events.loc[df['id'] == event.id, 'stop_Date'] = event.stop_date
+        self.events.loc[df['id'] == event.id, 'stop_date'] = event.stop_date
 
 
 

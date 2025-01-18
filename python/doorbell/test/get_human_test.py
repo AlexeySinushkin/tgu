@@ -2,7 +2,7 @@ import cv2
 from model.search_area import SearchArea
 
 test_video_search_area = SearchArea(0.25, 0, 0.85, 0.5)
-test_video_stream = cv2.VideoCapture("test_video.mp4")
+test_video_stream = cv2.VideoCapture("../resources/test_video.mp4")
 
 # initialize the HOG descriptor
 hog = cv2.HOGDescriptor()

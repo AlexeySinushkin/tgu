@@ -19,7 +19,7 @@ templates = Jinja2Templates(directory="templates")
 
 def get_implementation(test_mode:bool) -> (cv2.VideoCapture, AbstractEventStore):
     if test_mode:
-        return cv2.VideoCapture("./test/test_video.mp4"), InMemoryEventStore()
+        return cv2.VideoCapture(settings.test_video_file), InMemoryEventStore()
     else:
         return cv2.VideoCapture(settings.get_rtsp_url()), InMemoryEventStore() #TODO sqlite
 
