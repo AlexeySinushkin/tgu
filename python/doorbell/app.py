@@ -23,15 +23,22 @@ service = EventProducerService(test_video_stream, search_area, event_store)
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):
     target_date = request.query_params.get("date")
+    target_event_id = request.query_params.get("event_id")
     target_date = parse_date(target_date)
+
+    #по идентификатору события узнаем за какие сутки оно произошло (возможно пользователь вбил руками в адресной строке)
+    if target_event_id is not None:
+        target_event_id = int(target_event_id)
+        bell_event = event_store.get_event(target_event_id)
+        if bell_event is not None:
+            target_date = bell_event.start_date
+
 
     events =  event_store.get_events(target_date)
     events = from_dataframe(events)
 
-    target_event_id = request.query_params.get("event_id")
     target_event_index = 0
     if target_event_id is not None:
-        target_event_id = int(target_event_id)
         for i in range(0, len(events)):
             if events[i].id == target_event_id:
                 target_event_index=i

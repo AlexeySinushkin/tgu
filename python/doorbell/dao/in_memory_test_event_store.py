@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import io
 from PIL import Image
 import pandas as pd
+
 from dao.abstract_event_store import AbstractEventStore
 from model.bell_event import BellEvent
 from model.image_fs import EventImageFs
@@ -52,6 +53,20 @@ class InMemoryEventStore(AbstractEventStore):
         image.file_name = image_file_name
         self.images = pd.concat([self.images, pd.DataFrame([image.to_map()])], ignore_index=True)
         return event
+
+    def get_event(self, event_id: int) -> BellEvent | None:
+        try:
+            df = self.events
+            record = self.events[df['id']==event_id]
+            record = record.iloc[0]
+            bell_event = BellEvent()
+            bell_event.id = record['id']
+            bell_event.start_date =  record['start_date']
+            bell_event.stop_date = record['stop_date']
+            return bell_event
+        except Exception as ignored:
+            #TODO Logger
+            return None
 
     def get_events(self, date) -> [BellEvent]:
         df = self.events

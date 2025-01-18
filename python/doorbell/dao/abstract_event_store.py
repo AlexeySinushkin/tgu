@@ -10,6 +10,10 @@ class AbstractEventStore:
     pass
 
   @abstractmethod
+  def get_event(self, event_id: str) -> BellEvent | None:
+    pass
+
+  @abstractmethod
   def get_events(self, date) -> [BellEvent]:
     pass
 
