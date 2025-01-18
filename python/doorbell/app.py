@@ -18,7 +18,7 @@ event_store = InMemoryEventStore()
 search_area = SearchArea(0.25, 0, 0.85, 0.5)
 test_video_stream = cv2.VideoCapture("./test/test_video.mp4")
 service = EventProducerService(test_video_stream, search_area, event_store)
-service.start()
+#service.start()
 
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):
@@ -40,7 +40,11 @@ async def last_events(request: Request):
     if len(events) == 0:
         return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": 0, "date": format_date(target_date)})
     else:
-        events[target_event_index].css_class='active'
+        for i in range(0, len(events)):
+            if i==target_event_index:
+                events[i].css_class = 'btn-primary'
+            else:
+                events[i].css_class = 'btn-secondary'
         return templates.TemplateResponse("dashboard.html", {"request": request, "events": events, "active_event_id": events[target_event_index].id, "date": format_date(target_date)})
 
 

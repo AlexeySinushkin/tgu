@@ -19,7 +19,7 @@ class BellEventDto(BaseModel):
         super().__init__(**kwargs)  # Инициализация родительского класса User
         delta = self.stop_date - self.start_date
         if delta.seconds>0:
-            self.name = "{} {} сек".format(self.start_date.strftime("%X"), delta.seconds)
+            self.name = "{}   [{} сек]".format(self.start_date.strftime("%X"), delta.seconds)
         else:
             self.name = self.start_date.strftime("%X")
 
@@ -38,7 +38,7 @@ def from_dataframe(df: pd.DataFrame)->[BellEventDto]:
         event = df.iloc[i]
         list.append(BellEventDto(id = event["id"],
                         start_date = event["start_date"],
-                        stop_date = event["start_date"]))
+                        stop_date = event["stop_date"]))
     return list
 
 class BellEventDtoTest(unittest.TestCase):
