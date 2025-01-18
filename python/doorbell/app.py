@@ -10,7 +10,7 @@ from human_detection_service import EventProducerService
 from model.search_area import SearchArea
 from utils.date_utils import parse_date, format_date
 from dao.in_memory_test_event_store import InMemoryEventStore
-from rest_model.bell_event_dto import from_event, from_dataframe
+from rest_model.bell_event_dto import from_dataframe
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")

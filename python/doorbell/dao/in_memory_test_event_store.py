@@ -7,7 +7,7 @@ import pandas as pd
 from dao.abstract_event_store import AbstractEventStore
 from model.bell_event import BellEvent
 from model.image_fs import EventImageFs
-from utils.date_utils import get_start_end_pd
+from utils.date_utils import get_start_end_pd, date_format
 
 
 class InMemoryEventStore(AbstractEventStore):
@@ -72,6 +72,13 @@ class InMemoryEventStore(AbstractEventStore):
         image.save(imgio, 'PNG')
         imgio.seek(0)
         return imgio
+
+    def update(self, event: BellEvent):
+        df = self.events
+        self.events.loc[df['id'] == event.id, 'stop_Date'] = event.stop_date
+
+
+
 
 
 
