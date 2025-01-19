@@ -4,7 +4,6 @@ from datetime import datetime
 
 import cv2
 from cv2 import VideoCapture
-from pyparsing import Empty
 from config import settings
 from dao.abstract_event_store import AbstractEventStore
 from dao.test_image_dao import save_image
@@ -37,13 +36,13 @@ class EventProducerService(threading.Thread):
                     continue
 
                 frame2 = cv2.resize(frame, (800, 600)) #FIXME
-                if frame_index % 10 == 0:
+                if frame_index % 2 == 0:
                     target_area = self.area.crop(frame2)
                     # detect humans in input image
                     (humans, _) = self.hog.detectMultiScale(target_area)
                     # getting no. of human detected
                     humans_count = len(humans)
-                    if humans_count is not Empty:
+                    if humans_count > 0:
                         if last_saved_event is None:
                             self.draw_rect_around_human(frame2, humans)
                             file_name = self.save_frame(frame2)
@@ -56,7 +55,7 @@ class EventProducerService(threading.Thread):
                             #TODO добавить еще изображений к этому событию
                             last_saved_event.stop_date = datetime.now()
                             self.consumer.update(last_saved_event)
-                    elif last_saved_event is not None:
+                    if last_saved_event is not None:
                         delta = datetime.now() - last_saved_event.stop_date
                         if delta.seconds>20:
                             last_saved_event = None

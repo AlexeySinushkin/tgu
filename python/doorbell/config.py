@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
 
+from model.search_area import SearchArea
+
 
 class Settings(BaseSettings):
     # it will be used test/test_video.mp4 as video stream
@@ -11,6 +13,9 @@ class Settings(BaseSettings):
     # Linux set RTSP_PASSWORD=mypassword
     # Windows set RTSP_PASSWORD mypassword
     rtsp_password: str
+    #Для поиска по всему изображению нужны коэффициенты 0, 0, 1, 1
+    #Это координаты левого верхнего угла (x, y) и правого нижнего (x, y)
+    search_area: SearchArea = SearchArea(0.25, 0, 0.85, 0.5)
     rtsp_url: str = "rtsp://admin:{}@192.168.2.117:554/ISAPI/Streaming/Channels/101"
 
     def get_rtsp_url(self) -> str:

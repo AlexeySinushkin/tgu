@@ -17,15 +17,13 @@ from config import settings
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-def get_implementation(test_mode:bool) -> (cv2.VideoCapture, AbstractEventStore):
+def get_implementation(test_mode:bool) -> (cv2.VideoCapture, SearchArea, AbstractEventStore):
     if test_mode:
-        return cv2.VideoCapture(settings.test_video_file), InMemoryEventStore()
+        return cv2.VideoCapture(settings.test_video_file), settings.search_area, InMemoryEventStore()
     else:
-        return cv2.VideoCapture(settings.get_rtsp_url()), InMemoryEventStore() #TODO sqlite
+        return cv2.VideoCapture(settings.get_rtsp_url()), settings.search_area, InMemoryEventStore() #TODO sqlite
 
-stream, event_store = get_implementation(settings.test_mode)
-#search_area = SearchArea(0.25, 0, 0.85, 0.5)
-search_area = SearchArea(0.25, 0, 0.85, 0.9)
+stream, search_area, event_store = get_implementation(settings.test_mode)
 service = EventProducerService(stream, search_area, event_store)
 service.start()
 
