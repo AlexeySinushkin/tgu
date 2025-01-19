@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     #setup environment variable before launch
     # Linux set RTSP_PASSWORD=mypassword
     # Windows set RTSP_PASSWORD mypassword
-    rtsp_password: str
+    rtsp_password: str = ""
     #Для поиска по всему изображению нужны коэффициенты 0, 0, 1, 1
     #Это координаты левого верхнего угла (x, y) и правого нижнего (x, y)
     search_area: SearchArea = SearchArea(0.25, 0, 0.85, 0.5)

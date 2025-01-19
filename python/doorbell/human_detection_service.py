@@ -1,7 +1,7 @@
 import threading
 import time
 from datetime import datetime
-
+import logging
 import cv2
 from cv2 import VideoCapture
 from config import settings
@@ -47,7 +47,7 @@ class EventProducerService(threading.Thread):
                             self.draw_rect_around_human(frame2, humans)
                             file_name = self.save_frame(frame2)
                             last_saved_event = self.consumer.create(file_name)
-                            print(f'new event {file_name}')
+                            logging.info(f'Новое событие {last_saved_event.id}. Файл сохранен под именем {file_name}')
                             # TODO SRP move
                             sound.music.play()
                         else:
@@ -58,6 +58,7 @@ class EventProducerService(threading.Thread):
                     if last_saved_event is not None:
                         delta = datetime.now() - last_saved_event.stop_date
                         if delta.seconds>20:
+                            logging.debug(f"Событие {last_saved_event.id} считается завершенным")
                             last_saved_event = None
         finally:
             self.stream.release()

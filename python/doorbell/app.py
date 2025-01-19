@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import cv2
 import uvicorn
 from fastapi import FastAPI
@@ -13,6 +16,9 @@ from utils.date_utils import parse_date, format_date
 from dao.in_memory_test_event_store import InMemoryEventStore
 from rest_model.bell_event_dto import from_dataframe
 from config import settings
+
+logging.basicConfig(level=logging.INFO, filename='app.log', encoding='UTF-8', filemode='w', format='%(levelname)s: %(message)s')
+logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -31,6 +37,8 @@ service.start()
 async def last_events(request: Request):
     target_date = request.query_params.get("date")
     target_event_id = request.query_params.get("event_id")
+    logging.debug(f"Запрос на получение событий {target_date}, {target_event_id}")
+
     target_date = parse_date(target_date)
 
     #по идентификатору события узнаем за какие сутки оно произошло (возможно пользователь вбил руками в адресной строке)
@@ -72,4 +80,4 @@ def event_main_image(event_id: int):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    uvicorn.run(app, host="127.0.0.1", port=8001, log_level="debug")
