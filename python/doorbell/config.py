@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     test_mode:bool = True
     doorbell_sound_file: str = "resources/doorbell-26896.mp3"
     test_video_file: str = "resources/test_video.mp4"
-    test_images_dir: str = "resources/event-images"
+    images_dir: str = "resources/event-images"
     #setup environment variable before launch
     # Linux set RTSP_PASSWORD=mypassword
     # Windows set RTSP_PASSWORD mypassword

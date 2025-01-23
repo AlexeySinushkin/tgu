@@ -6,7 +6,7 @@ from model.bell_event import BellEvent
 
 class AbstractEventStore:
   @abstractmethod
-  def create(self, image) -> BellEvent:
+  def create(self, image_file_relative_path) -> BellEvent:
     pass
 
   @abstractmethod

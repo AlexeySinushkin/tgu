@@ -1,4 +1,5 @@
 import io
+import logging
 import unittest
 from datetime import datetime, timedelta
 import pandas as pd
@@ -63,8 +64,8 @@ class InMemoryEventStore(AbstractEventStore):
             bell_event.start_date =  record['start_date']
             bell_event.stop_date = record['stop_date']
             return bell_event
-        except Exception as ignored:
-            #TODO Logger
+        except Exception as e:
+            logging.error(e)
             return None
 
     def get_events(self, date) -> [BellEvent]:
