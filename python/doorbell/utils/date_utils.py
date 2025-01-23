@@ -31,7 +31,7 @@ def get_start_end_pd(date: datetime)-> (datetime, datetime):
 
 def parse_sqlite(date_string: str) -> datetime:
     #убираем миллисекунды из '2025-01-23 14:40:23.531159'
-    date_string = re.sub('\..+', '', date_string)
+    date_string = re.sub('\\..+', '', date_string)
     return datetime.strptime(date_string, date_format_sqlite)
 
 def format_for_sqlite(date: datetime) -> str:

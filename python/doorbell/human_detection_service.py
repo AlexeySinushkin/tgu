@@ -20,6 +20,10 @@ class EventProducerService(threading.Thread):
         # initialize the HOG descriptor
         self.hog = cv2.HOGDescriptor()
         self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+        self.allow_run = True
+
+    def stop(self):
+        self.allow_run = False
 
     def run(self):
         frame_index = 0
@@ -28,7 +32,7 @@ class EventProducerService(threading.Thread):
         sound.music.load(settings.doorbell_sound_file)
 
         try:
-            while True:
+            while self.allow_run:
                 ret, frame = self.stream.read()
                 frame_index += 1
                 if not ret:

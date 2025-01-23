@@ -34,6 +34,10 @@ stream, search_area, event_store = get_implementation(settings.test_mode)
 service = EventProducerService(stream, search_area, event_store)
 service.start()
 
+@app.on_event("shutdown")
+def shutdown_event():
+    service.stop()
+
 @app.get("/", response_class=HTMLResponse)
 async def last_events(request: Request):
     target_date = request.query_params.get("date")

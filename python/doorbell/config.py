@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     test_video_file: str = "resources/test_video.mp4"
     images_dir: str = "resources/event-images"
     #setup environment variable before launch
-    # Linux set RTSP_PASSWORD=mypassword
+    # Linux RTSP_PASSWORD=mypassword
     # Windows set RTSP_PASSWORD mypassword
     rtsp_password: str = ""
     #Для поиска по всему изображению нужны коэффициенты 0, 0, 1, 1
