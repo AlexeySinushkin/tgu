@@ -3,6 +3,8 @@ from datetime import datetime, time
 import pandas as pd
 
 date_format = "%d.%m.%Y"
+date_format_sqlite = "%Y-%m-%d"
+
 
 def parse_date(date_string: str | None) -> datetime:
     if date_string is None:
@@ -24,3 +26,6 @@ def get_start_end_pd(date: datetime)-> (datetime, datetime):
     start_of_day = datetime.combine(date, time.min)
     end_of_day = datetime.combine(date, time.max)
     return pd.to_datetime(start_of_day), pd.to_datetime(end_of_day)
+
+def format_for_sqlite(date: datetime) -> str:
+    return date.strftime(date_format_sqlite)

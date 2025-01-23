@@ -11,7 +11,7 @@ from dao.abstract_event_store import AbstractEventStore
 from dao.test_image_dao import load_image
 from model.bell_event import BellEvent
 from model.image_fs import EventImageFs
-from utils.date_utils import get_start_end_pd, date_format
+from utils.date_utils import get_start_end_pd, date_format, format_for_sqlite
 
 DB_NAME = "events.db"
 
@@ -64,9 +64,11 @@ class SqLiteEventStore(AbstractEventStore):
 
     def get_events(self, date) -> [BellEvent]:
         start, end  = get_start_end_pd(date)
+        start = format_for_sqlite(start)
+        end = format_for_sqlite(end)
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-        cursor = cursor.execute("SELECT * FROM events WHERE start_date between (?, ?)", (start, end,))
+        cursor = cursor.execute("SELECT * FROM events WHERE start_date >= ? and start_date <= ?", (start, end,))
         result = []
         for row in cursor.fetchall():
             result.append(self.__row_to_event(row))
