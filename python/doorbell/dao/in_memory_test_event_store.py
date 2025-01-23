@@ -59,11 +59,7 @@ class InMemoryEventStore(AbstractEventStore):
             df = self.events
             record = self.events[df['id']==event_id]
             record = record.iloc[0]
-            bell_event = BellEvent()
-            bell_event.id = record['id']
-            bell_event.start_date =  record['start_date']
-            bell_event.stop_date = record['stop_date']
-            return bell_event
+            return self.__from_record(record)
         except Exception as e:
             logging.error(e)
             return None
@@ -71,7 +67,19 @@ class InMemoryEventStore(AbstractEventStore):
     def get_events(self, date) -> [BellEvent]:
         df = self.events
         start, end  = get_start_end_pd(date)
-        return self.events[df['start_date'].ge(start) & df['start_date'].le(end)]
+        df = self.events[df['start_date'].ge(start) & df['start_date'].le(end)]
+        list = []
+        for i in range(0, df.shape[0]):
+            record = df.iloc[i]
+            list.append(self.__from_record(record))
+        return list
+
+    def __from_record(self, record):
+        bell_event = BellEvent()
+        bell_event.id = record['id']
+        bell_event.start_date = record['start_date']
+        bell_event.stop_date = record['stop_date']
+        return bell_event
 
     def get_images(self, event_id) -> [EventImageFs]:
         df = self.images

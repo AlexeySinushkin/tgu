@@ -15,7 +15,7 @@ from human_detection_service import EventProducerService
 from model.search_area import SearchArea
 from utils.date_utils import parse_date, format_date
 from dao.in_memory_test_event_store import InMemoryEventStore
-from rest_model.bell_event_dto import from_dataframe, from_event
+from rest_model.bell_event_dto import from_event
 from config import settings
 
 logging.basicConfig(level=logging.INFO, filename='app.log', encoding='UTF-8', filemode='w', format='%(levelname)s: %(message)s')
@@ -26,9 +26,9 @@ templates = Jinja2Templates(directory="templates")
 
 def get_implementation(test_mode:bool) -> (cv2.VideoCapture, SearchArea, AbstractEventStore):
     if test_mode:
-        return cv2.VideoCapture(settings.test_video_file), settings.search_area, SqLiteEventStore()
+        return cv2.VideoCapture(settings.test_video_file), settings.search_area, InMemoryEventStore()
     else:
-        return cv2.VideoCapture(settings.get_rtsp_url()), settings.search_area, InMemoryEventStore() #TODO sqlite
+        return cv2.VideoCapture(settings.get_rtsp_url()), settings.search_area, SqLiteEventStore()
 
 stream, search_area, event_store = get_implementation(settings.test_mode)
 service = EventProducerService(stream, search_area, event_store)

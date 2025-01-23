@@ -1,6 +1,5 @@
 import unittest
 from datetime import datetime, timedelta
-import pandas as pd
 from pydantic.v1 import BaseModel
 
 from model.bell_event import BellEvent
@@ -29,14 +28,7 @@ def from_event(event: BellEvent):
                         stop_date = event.stop_date)
     return dto
 
-def from_dataframe(df: pd.DataFrame)->[BellEventDto]:
-    list = []
-    for i in range(0, df.shape[0]):
-        event = df.iloc[i]
-        list.append(BellEventDto(id = event["id"],
-                        start_date = event["start_date"],
-                        stop_date = event["stop_date"]))
-    return list
+
 
 class BellEventDtoTest(unittest.TestCase):
   def test_create(self):
