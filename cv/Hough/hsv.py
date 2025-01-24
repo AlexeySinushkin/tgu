@@ -64,6 +64,10 @@ image_path = "balls.png"
 low = gimp_to_open_cv_hsv([65, 82, 50])
 high = gimp_to_open_cv_hsv([100, 89, 90])
 
+#Более широкий диапазон - находит больше
+#low = gimp_to_open_cv_hsv([65, 70, 0])
+#high = gimp_to_open_cv_hsv([120, 150, 255])
+
 image_RGB = cv2_find_by_colour(low, high)
 #cv2_show_image(image_RGB)
 countur = find_countur(image_RGB)
