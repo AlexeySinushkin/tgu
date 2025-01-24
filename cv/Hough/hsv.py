@@ -61,14 +61,16 @@ def gimp_to_open_cv_hsv(hsv):
 
 
 image_path = "balls.png"
-low = gimp_to_open_cv_hsv([65, 82, 50])
-high = gimp_to_open_cv_hsv([100, 89, 90])
+#low = gimp_to_open_cv_hsv([65, 82, 50])
+#high = gimp_to_open_cv_hsv([100, 89, 90])
 
 #Более широкий диапазон - находит больше
-#low = gimp_to_open_cv_hsv([65, 70, 0])
-#high = gimp_to_open_cv_hsv([120, 150, 255])
+low = gimp_to_open_cv_hsv([65, 50, 20])
+high = gimp_to_open_cv_hsv([120, 255, 255])
 
 image_RGB = cv2_find_by_colour(low, high)
-#cv2_show_image(image_RGB)
-countur = find_countur(image_RGB)
-cv2_show_image(countur)
+kernel = np.ones((9, 9), np.uint8)
+image_RGB = cv2.morphologyEx(image_RGB, cv2.MORPH_OPEN, kernel)
+cv2_show_image(image_RGB)
+#countur = find_countur(image_RGB)
+#cv2_show_image(countur)
