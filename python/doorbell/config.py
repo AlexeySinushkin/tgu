@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     images_dir: str = "resources/event-images"
     #setup environment variable before launch
     # Linux RTSP_PASSWORD=mypassword
-    # Windows set RTSP_PASSWORD mypassword
+    # Windows set RTSP_PASSWORD=mypassword
     rtsp_password: str = ""
     #Для поиска по всему изображению нужны коэффициенты 0, 0, 1, 1
     #Это координаты левого верхнего угла (x, y) и правого нижнего (x, y)

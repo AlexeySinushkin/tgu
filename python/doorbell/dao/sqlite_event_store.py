@@ -3,7 +3,7 @@ import logging
 import sqlite3
 import unittest
 from datetime import datetime
-
+from sqlite3 import Cursor
 
 from dao.abstract_event_store import AbstractEventStore
 from dao.test_image_dao import load_image
@@ -35,45 +35,58 @@ class SqLiteEventStore(AbstractEventStore):
         """)
         conn.commit()
         conn.close()
-        pass
+        self.cursor : Cursor | None = None
 
+    def connect_execute_close(func, *args, **kwargs):
+        """Декоратор выполняет подключение к БД и закрытие после завершения"""
+        def wrapper(self, *args, **kwargs):
+            conn = sqlite3.connect(self.db_file_name)
+            self.cursor = conn.cursor()
+            try:
+                result = func(self, *args, **kwargs)
+                conn.commit()
+                return result
+            finally:
+                self.cursor = None
+                conn.close()
+        return wrapper
+
+    @connect_execute_close
     def create(self, image_file_relative_path) -> BellEvent:
-        conn = sqlite3.connect(self.db_file_name)
-        cursor = conn.cursor()
-        cursor = cursor.execute("INSERT INTO events (start_date, stop_date) VALUES (?, ?)", (datetime.now(), datetime.now()))
+        cursor = self.cursor.execute("INSERT INTO events (start_date, stop_date) VALUES (?, ?)", (datetime.now(), datetime.now()))
         event_id = cursor.lastrowid
 
         cursor.execute("INSERT INTO images (event_id, file_name, creation_date) VALUES (?, ?, ?)",
                        (event_id, image_file_relative_path, datetime.now()))
-        conn.commit()
-        conn.close()
 
-        return self.get_event(event_id)
+        cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+        row = cursor.fetchone()
+        if row:
+            return self.__row_to_event(row)
+        else:
+            raise Exception('Не найдена только что вставленная запись события')
 
+    @connect_execute_close
     def get_event(self, event_id: int) -> BellEvent | None:
         try:
-            conn = sqlite3.connect(self.db_file_name)
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
-            row = cursor.fetchone()
-            conn.close()
+            self.cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+            row = self.cursor.fetchone()
             if row:
                 return self.__row_to_event(row)
         except Exception as e:
             logging.error(e)
             return None
 
+    @connect_execute_close
     def get_events(self, date) -> [BellEvent]:
         start, end  = get_start_end_pd(date)
         start = format_for_sqlite(start)
         end = format_for_sqlite(end)
-        conn = sqlite3.connect(self.db_file_name)
-        cursor = conn.cursor()
-        cursor = cursor.execute("SELECT * FROM events WHERE start_date >= ? and start_date <= ?", (start, end,))
+
+        cursor = self.cursor.execute("SELECT * FROM events WHERE start_date >= ? and start_date <= ?", (start, end,))
         result = []
         for row in cursor.fetchall():
             result.append(self.__row_to_event(row))
-        conn.close()
         return result
 
     def __row_to_event(self, row) -> BellEvent:
@@ -83,26 +96,22 @@ class SqLiteEventStore(AbstractEventStore):
         bell_event.stop_date = parse_sqlite(row[2])
         return bell_event
 
+    @connect_execute_close
     def get_images(self, event_id: int) -> [EventImageFs]:
-        conn = sqlite3.connect(self.db_file_name)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM images WHERE event_id = ?", (event_id,))
+        self.cursor.execute("SELECT * FROM images WHERE event_id = ?", (event_id,))
         result = []
-        for row in cursor.fetchall():
+        for row in self.cursor.fetchall():
             result.append(self.__row_to_image(row))
-        conn.close()
         return result
 
     def get_main_image(self, event_id: int) -> io.BytesIO:
         image = self.get_main_image_record(event_id)
         return load_image(image.file_name)
 
+    @connect_execute_close
     def get_main_image_record(self, event_id: int) -> EventImageFs:
-        conn = sqlite3.connect(self.db_file_name)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM images WHERE event_id = ? order by creation_date limit 1", (event_id,))
-        row = cursor.fetchone()
-        conn.close()
+        self.cursor.execute("SELECT * FROM images WHERE event_id = ? order by creation_date limit 1", (event_id,))
+        row = self.cursor.fetchone()
         return self.__row_to_image(row)
 
 
@@ -114,15 +123,9 @@ class SqLiteEventStore(AbstractEventStore):
         return image
 
     #TODO добавлять второстепенные картинки
+    @connect_execute_close
     def update(self, event: BellEvent):
-        conn = sqlite3.connect(self.db_file_name)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE events SET stop_date = ? WHERE id = ?", (event.stop_date, event.id))
-        conn.commit()
-        conn.close()
-
-
-
+        self.cursor.execute("UPDATE events SET stop_date = ? WHERE id = ?", (event.stop_date, event.id))
 
 
 

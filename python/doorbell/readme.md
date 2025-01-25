@@ -32,6 +32,7 @@
 * Data Transfer Object - **rest_model/bell_event_dto.py**
 * Factory Method - **app.py**
 * Pure Fabrication - **utils/date_utils.py**
+* Decorator - **dao/sqlite_event_store.py**
 
 #### Хранение данных
 На данный момент есть одна реализация хранилища данных InMemoryEventStore
