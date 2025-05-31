@@ -1,107 +1,47 @@
-import numpy as np
-import onnxruntime as ort
-import pytesseract
 import cv2
-from augmentation import ColorTransformer, GeometricTransformer, NoiseTransformer, apply_pipeline
-
-colorTransformer = ColorTransformer()
-geometricTransformer = GeometricTransformer()
-noiseTransformer = NoiseTransformer()
-transformations = [colorTransformer, noiseTransformer, geometricTransformer]
-
-#Зашумляем
-def apply_augmentation(img: np.ndarray) -> np.ndarray:
-    transformed_img = img.copy()
-    for transform in transformations:
-        transformed_img = transform.random_transform(transformed_img)
-    return transformed_img
+import numpy as np
 
 
-#Вырезаем область с номером
-#def get_clean_plate(preprocessed_img: np.ndarray) -> np.ndarray:
-#    return plate_img
-#plate_img = get_clean_plate(preprocessed_img)
+def detect_plate_number(image_path):
+    # Шаг 1: Загрузка изображения в черно-белом формате
+    img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img_gray is None:
+        raise FileNotFoundError(f"Изображение не найдено: {image_path}")
 
-#cars = [cv2.imread('car1.jpg'), cv2.imread('car2.jpg'), cv2.imread('car3.jpg')]
-#preprocessed_img = apply_augmentation(cars[0])
+    blurred = cv2.GaussianBlur(img_gray, (5, 5), 0)
+    canny = cv2.Canny(blurred, 100, 200)
 
-# Load ONNX model
-session = ort.InferenceSession("DB_TD500_resnet18.onnx", providers=['CPUExecutionProvider'])
+    cv2.imshow("Detected Plates", canny)
+    cv2.waitKey(0)
 
-# Image normalization parameters
-input_height = 736
-input_width = 1280
-mean = [0.485, 0.456, 0.406]
-std = [0.229, 0.224, 0.225]
+    # Шаг 4: Морфологические операции
+    # Закрытие: помогает соединить вертикальные контуры букв
+    kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (17, 5))
+    closed = cv2.morphologyEx(canny, cv2.MORPH_CLOSE, kernel_close)
 
-def preprocess(img):
-    h, w = img.shape[:2]
-    resized = cv2.resize(img, (input_width, input_height))
-    img_norm = resized.astype(np.float32) / 255.
-    img_norm = (img_norm - mean) / std
-    img_trans = img_norm.transpose(2, 0, 1)
-    input_blob = np.expand_dims(img_trans, axis=0).astype(np.float32)
-    return input_blob, (w / input_width, h / input_height)
+    # Эрозия: отделяет табличку от лишних элементов
+    kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    eroded = cv2.erode(closed, kernel_erode, iterations=1)
 
-def is_plate_shape(box, min_area=500, aspect_range=(4.2, 5.0)):
-    # Use bounding box for aspect ratio
-    x, y, w, h = cv2.boundingRect(box)
-    if w == 0 or h == 0:
-        return False
-    area = w * h
-    aspect_ratio = w / h
-    return area > min_area and aspect_range[0] <= aspect_ratio <= aspect_range[1]
+    # Шаг 5: Поиск контуров
+    contours, _ = cv2.findContours(eroded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-def postprocess(prob_map, scale, thresh=0.3):
-    bin_map = (prob_map > thresh).astype(np.uint8) * 255
-    contours, _ = cv2.findContours(bin_map, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
-    boxes = []
+    # Шаг 6: Фильтрация контуров по пропорциям
+    plate_candidates = []
     for cnt in contours:
-        if cv2.contourArea(cnt) < 100:
-            continue
-        rect = cv2.minAreaRect(cnt)
-        box = cv2.boxPoints(rect)
-        box *= scale
-        box = box.astype(int)
-        if is_plate_shape(box):
-            boxes.append(box)
-    return boxes
+        x, y, w, h = cv2.boundingRect(cnt)
+        aspect_ratio = w / float(h)
+        if 4.2 < aspect_ratio < 4.9 and w > 100 and h > 20:  # Можно скорректировать по размеру
+            plate_candidates.append((x, y, w, h))
 
-# Load image
-image = cv2.imread("car1.jpg")
-input_blob, scale = preprocess(image)
+    # Шаг 7: Возвращаем найденные таблички или одну (например, первую)
+    result_img = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR)
+    for (x, y, w, h) in plate_candidates:
+        cv2.rectangle(result_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-# Run inference
-outputs = session.run(None, {"input": input_blob})
-output = outputs[0]  # Should be shape (1, 1, H, W)
-if output.ndim == 4:
-    prob_map = output[0, 0, :, :]
-else:
-    raise ValueError(f"Unexpected model output shape: {output.shape}")
+    return result_img, plate_candidates  # Вернём изображение и координаты табличек
 
-# Get filtered license plate-shaped boxes
-boxes = postprocess(prob_map, scale)
-
-# Crop & OCR
-for i, box in enumerate(boxes):
-    rect = cv2.boundingRect(box)
-    x, y, w, h = rect
-    plate_roi = image[y:y+h, x:x+w]
-
-    # Improve OCR via preprocessing
-    gray = cv2.cvtColor(plate_roi, cv2.COLOR_BGR2GRAY)
-    gray = cv2.bilateralFilter(gray, 11, 17, 17)
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-    # OCR
-    text = pytesseract.image_to_string(thresh, config='--psm 7')
-    print(f"[{i}] Plate Text: {text.strip()}")
-
-    # Draw box and show
-    cv2.drawContours(image, [box], -1, (0, 255, 0), 2)
-    cv2.imshow(f"plate_{i}", plate_roi)
-
-cv2.imshow("Detected Plates", image)
+output_img, plates = detect_plate_number("car3.jpg")
+cv2.imshow("Detected Plates", output_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
