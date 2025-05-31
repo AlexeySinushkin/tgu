@@ -1,44 +1,44 @@
-import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-def resize(img, size=(100, 100)):
-    old_h, old_w = img.shape[:2]
-    new_h, new_w = size
+from augmentation import ColorTransformer, GeometricTransformer, NoiseTransformer, apply_pipeline
+from utils import resize, load_all_jpg_images
 
-    # Выбор интерполяции
-    if old_h > new_h or old_w > new_w:
-        interp = cv2.INTER_AREA  # лучше для уменьшения
-    else:
-        interp = cv2.INTER_CUBIC  # лучше для увеличения
+images = []
+all_imgs, _ = load_all_jpg_images('./archive')
+for img in all_imgs:
+    images.append(resize(img))
 
-    # Создаем холст из нулей (чёрный фон)
-    new_img = np.zeros((new_h, new_w, img.shape[2]), dtype=img.dtype)
+"""
+Ожидаемый результат - numpy массив images с изображениями из датасета, 
+приведенными к единому размеру: 100х100x3 с сохранением соотношения сторон.
+"""
 
-    ar = old_h / old_w
-    if ar > 1:  # вертикальное изображение
-        factor = new_h / old_h
-        resize_h = new_h
-        resize_w = int(old_w * factor)
-    else:  # горизонтальное изображение или квадрат
-        factor = new_w / old_w
-        resize_w = new_w
-        resize_h = int(old_h * factor)
+images_count = len(images)
+print(f"images in RAM {images_count}")
 
-    resized_img = cv2.resize(img, (resize_w, resize_h), interpolation=interp)
+"""
+Применение аугментации. Ожидаемый результат - 5 аугментированных изображений.
+"""
+colorTransformer = ColorTransformer()
+geometricTransformer = GeometricTransformer()
+noiseTransformer = NoiseTransformer()
 
-    # Вставляем центрированное изображение на холст
-    start_ymin = max((new_h - resize_h) // 2, 0)
-    start_xmin = max((new_w - resize_w) // 2, 0)
+transformation_pipeline_1 = [colorTransformer, noiseTransformer, geometricTransformer]
+transformation_pipeline_2 = [geometricTransformer, colorTransformer, noiseTransformer]
+transformation_pipeline_3 = [noiseTransformer, geometricTransformer, colorTransformer]
+transformation_pipeline_4 = [colorTransformer, geometricTransformer, noiseTransformer]
 
-    new_img[start_ymin:start_ymin + resize_h, start_xmin:start_xmin + resize_w] = resized_img
+target_img = images[np.random.randint(0, images_count-1)]
 
-    return new_img
-
-
-
-img = cv2.imread('archive/bleached_corals/876246000_b90c98b818_o.jpg')
-new_img = resize(img)
-
-plt.imshow(new_img[...,::-1])
+f, axes = plt.subplots(1, 5, figsize=(15, 5))
+axes[0].imshow(target_img[..., ::-1])
+augmented_image = apply_pipeline(target_img, transformation_pipeline_1)
+axes[1].imshow(augmented_image[..., ::-1])
+augmented_image = apply_pipeline(target_img, transformation_pipeline_2)
+axes[2].imshow(augmented_image[..., ::-1])
+augmented_image = apply_pipeline(target_img, transformation_pipeline_3)
+axes[3].imshow(augmented_image[..., ::-1])
+augmented_image = apply_pipeline(target_img, transformation_pipeline_4)
+axes[4].imshow(augmented_image[..., ::-1])
 plt.show()
