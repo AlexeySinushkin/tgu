@@ -2,9 +2,10 @@ import cv2
 
 from matplotlib import pyplot as plt
 from pytesseract import pytesseract
-
 from augmentation import apply_augmentation
 from plate_extract import preprocess
+
+pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 img = cv2.imread("car3.jpg")
 img = apply_augmentation(img)
@@ -16,7 +17,9 @@ if plate_coord is not None:
     #EAST_model = cv2.dnn.TextDetectionModel_EAST('frozen_east_text_detection.pb')
     #EAST_model.setInputParams (1., (512, 512), (127.5, 127.5, 127.5), True)
     #boxes, confidences = EAST_model.detect (plate_img)
-    text = pytesseract.image_to_string(plate_img, lang='eng', config='--psm 7')
+
+    text = pytesseract.image_to_string(plate_img, lang='rus', config='--psm 7')
+    print(text)
 
 
 f, axes = plt.subplots(1, 3, figsize=(10, 5))
