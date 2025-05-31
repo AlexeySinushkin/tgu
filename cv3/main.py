@@ -1,48 +1,27 @@
 import cv2
-import numpy as np
+
 from matplotlib import pyplot as plt
+from pytesseract import pytesseract
 
-def detect_plate_number(image_path):
-    # Загрузка изображения в черно-белом формате
-    img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if img_gray is None:
-        raise FileNotFoundError(f"Изображение не найдено: {image_path}")
+from augmentation import apply_augmentation
+from plate_extract import preprocess
 
-    blurred = cv2.GaussianBlur(img_gray, (5, 5), 0)
-    canny = cv2.Canny(blurred, 100, 200)
+img = cv2.imread("car3.jpg")
+img = apply_augmentation(img)
+canny, output_img, plate_coord = preprocess(img.copy())
+plate_img = None
+if plate_coord is not None:
+    x, y, w, h = plate_coord
+    plate_img = img[y:y + h, x:x + w]
+    #EAST_model = cv2.dnn.TextDetectionModel_EAST('frozen_east_text_detection.pb')
+    #EAST_model.setInputParams (1., (512, 512), (127.5, 127.5, 127.5), True)
+    #boxes, confidences = EAST_model.detect (plate_img)
+    text = pytesseract.image_to_string(plate_img, lang='eng', config='--psm 7')
 
-    # Поиск контуров
-    contours, _ = cv2.findContours(canny, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_L1)
-    contours = sorted(contours, key=cv2.contourArea)
-    # Фильтрация контуров по пропорциям
-    plate_candidates = []
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        aspect_ratio = w / float(h)
-        #if 4.2 < aspect_ratio < 4.9 and w > 100 and h > 20:
-        if 3.4 < aspect_ratio < 4.9 and w > 100 and h > 20:
-            roi = canny[y:y + h, x:x + w]  # Вырезаем область из бинарного изображения
-            # Находим контуры внутри ROI
-            inner_contours, _ = cv2.findContours(roi, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-            letter_count = 0
-            for lc in inner_contours:
-                _, _, lc_w, lc_h = cv2.boundingRect(lc)
-                if lc_w>10 and lc_h>25:
-                    letter_count+=1
-            if letter_count > 5:
-                plate_candidates.append((x, y, w, h))
-                break
 
-    # Возвращаем найденные таблички или одну (например, первую)
-    result_img = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR)
-    for (x, y, w, h) in plate_candidates:
-        cv2.rectangle(result_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-    return canny, result_img, plate_candidates  # Вернём изображение и координаты табличек
-
-canny, output_img, plates = detect_plate_number("car1.jpg")
-
-f, axes = plt.subplots(1, 2, figsize=(10, 5))
+f, axes = plt.subplots(1, 3, figsize=(10, 5))
 axes[0].imshow(canny[...])
 axes[1].imshow(output_img[...])
+if plate_img is not None:
+    axes[2].imshow(plate_img)
 plt.show()

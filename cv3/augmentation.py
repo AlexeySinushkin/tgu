@@ -19,9 +19,9 @@ class ColorTransformer(ImageTransformer):
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
 
         # Random hue (-10 to +10), saturation (0.8–1.2), brightness (0.8–1.2)
-        hue_shift = random.uniform(-10, 10)
-        sat_mult = random.uniform(0.8, 1.2)
-        val_mult = random.uniform(0.8, 1.2)
+        hue_shift = random.uniform(-1, 1)
+        sat_mult = random.uniform(0.9, 1.1)
+        val_mult = random.uniform(0.9, 1.1)
 
         hsv[..., 0] = (hsv[..., 0] + hue_shift) % 180
         hsv[..., 1] *= sat_mult
@@ -36,13 +36,10 @@ class GeometricTransformer(ImageTransformer):
         h, w = img.shape[:2]
 
         transform_type = random.choice([
-            "flip", "crop", "zoom", "rotate", "shift", "perspective"
+           "crop", "zoom", "shift", "perspective"
         ])
 
-        if transform_type == "flip":
-            return cv2.flip(img, flipCode=random.choice([-1, 0, 1]))
-
-        elif transform_type == "crop":
+        if transform_type == "crop":
             start_x = random.randint(0, w // 10)
             start_y = random.randint(0, h // 10)
             end_x = w - random.randint(0, w // 10)
@@ -61,20 +58,15 @@ class GeometricTransformer(ImageTransformer):
             else:
                 return resized[:h, :w]
 
-        elif transform_type == "rotate":
-            angle = random.uniform(-20, 20)
-            matrix = cv2.getRotationMatrix2D((w // 2, h // 2), angle, 1)
-            return cv2.warpAffine(img, matrix, (w, h), borderMode=cv2.BORDER_REFLECT)
-
         elif transform_type == "shift":
-            dx = random.randint(-w // 10, w // 10)
-            dy = random.randint(-h // 10, h // 10)
+            dx = random.randint(-w // 2, w // 2)
+            dy = random.randint(-h // 2, h // 2)
             matrix = np.float32([[1, 0, dx], [0, 1, dy]])
             return cv2.warpAffine(img, matrix, (w, h), borderMode=cv2.BORDER_REFLECT)
 
         elif transform_type == "perspective":
             pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
-            offset = 0.05 * min(h, w)
+            offset = 0.02 * min(h, w)
             pts2 = pts1 + np.random.uniform(-offset, offset, pts1.shape).astype(np.float32)
             matrix = cv2.getPerspectiveTransform(pts1, pts2)
             return cv2.warpPerspective(img, matrix, (w, h), borderMode=cv2.BORDER_REFLECT)
@@ -110,7 +102,13 @@ class NoiseTransformer(ImageTransformer):
 
         return output
 
-def apply_pipeline(img: np.ndarray, transformations: [ImageTransformer]) -> np.ndarray:
+
+colorTransformer = ColorTransformer()
+geometricTransformer = GeometricTransformer()
+noiseTransformer = NoiseTransformer()
+default_transformations = [colorTransformer, noiseTransformer, geometricTransformer]
+
+def apply_augmentation(img: np.ndarray, transformations=default_transformations) -> np.ndarray:
     transformed_img = img.copy()
     for transform in transformations:
         transformed_img = transform.random_transform(transformed_img)
