@@ -142,7 +142,7 @@ def show_1():
   imshow(red)
 
 def show_street():
-  image = cv2.imread("images/street.jpg")
+  image = cv2.imread("images/poster.png")
   image = to_grayscale(image)
   image = apply_pipeline(image)
   imshow(image)
@@ -155,7 +155,7 @@ def show_stadium():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-  show_1()
+  #show_1()
   show_street()
-  show_stadium()
+  #show_stadium()
 
