@@ -1,30 +1,33 @@
 import cv2
+import numpy as np
+from PIL.Image import Image
+from PIL.ImageDraw import ImageDraw
+from PIL.ImageFont import ImageFont
 
 from matplotlib import pyplot as plt
-from pytesseract import pytesseract
 from augmentation import apply_augmentation
+from ocr import get_text
 from plate_extract import preprocess
 
-pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
-
-img = cv2.imread("car3.jpg")
+img = cv2.imread("car1.jpg")
 img = apply_augmentation(img)
 canny, output_img, plate_coord = preprocess(img.copy())
 plate_img = None
 if plate_coord is not None:
     x, y, w, h = plate_coord
     plate_img = img[y:y + h, x:x + w]
-    #EAST_model = cv2.dnn.TextDetectionModel_EAST('frozen_east_text_detection.pb')
-    #EAST_model.setInputParams (1., (512, 512), (127.5, 127.5, 127.5), True)
-    #boxes, confidences = EAST_model.detect (plate_img)
-
-    text = pytesseract.image_to_string(plate_img, lang='rus', config='--psm 7')
-    print(text)
-
+    plate_text = get_text(plate_img)
+    print(plate_text)
+    cv2.putText(output_img, plate_text, (x, y-10),
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=1,
+                color=(0, 255, 0),
+                thickness=2,
+                lineType=cv2.LINE_AA)
 
 f, axes = plt.subplots(1, 3, figsize=(10, 5))
-axes[0].imshow(canny[...])
-axes[1].imshow(output_img[...])
+axes[0].imshow(canny)
+axes[1].imshow(output_img)
 if plate_img is not None:
     axes[2].imshow(plate_img)
 plt.show()
