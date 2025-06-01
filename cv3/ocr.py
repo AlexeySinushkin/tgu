@@ -9,7 +9,7 @@ import re
 
 
 # убираем шум
-def prepare(plate_img):
+def prepare_plate_img(plate_img):
     img_gray = cv2.cvtColor(plate_img.copy(), cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(img_gray, (5, 5), 1)
     threshold, binary_img = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)
@@ -44,9 +44,9 @@ class OcrTests(unittest.TestCase):
         plate_img = cv2.imread('test-resources/plate3.jpg')
         f, axes = plt.subplots(1, 2, figsize=(10, 5))
         axes[0].imshow(plate_img)
-        axes[1].imshow(prepare(plate_img))
+        axes[1].imshow(prepare_plate_img(plate_img))
         plt.show()
     def test_ocr(self):
         plate_img = cv2.imread('test-resources/plate3.jpg')
-        text = get_text(prepare(plate_img))
+        text = get_text(prepare_plate_img(plate_img))
         print(text)
