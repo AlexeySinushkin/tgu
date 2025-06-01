@@ -16,7 +16,7 @@ def preprocess(image):
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
         aspect_ratio = w / float(h)
-        if 3.4 < aspect_ratio < 4.9 and w > 100 and h > 20:
+        if 3.3 < aspect_ratio < 5.1 and w > 80 and h > 15:
             roi = canny[y:y + h, x:x + w]  # Вырезаем область из бинарного изображения
             # Находим контуры внутри ROI
             inner_contours, _ = cv2.findContours(roi, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)

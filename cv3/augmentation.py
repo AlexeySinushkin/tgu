@@ -36,7 +36,7 @@ class GeometricTransformer(ImageTransformer):
         h, w = img.shape[:2]
 
         transform_type = random.choice([
-           "crop", "zoom", "shift", "perspective"
+           "crop", "zoom", "shift"
         ])
 
         if transform_type == "crop":
@@ -64,12 +64,6 @@ class GeometricTransformer(ImageTransformer):
             matrix = np.float32([[1, 0, dx], [0, 1, dy]])
             return cv2.warpAffine(img, matrix, (w, h), borderMode=cv2.BORDER_REFLECT)
 
-        elif transform_type == "perspective":
-            pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
-            offset = 0.02 * min(h, w)
-            pts2 = pts1 + np.random.uniform(-offset, offset, pts1.shape).astype(np.float32)
-            matrix = cv2.getPerspectiveTransform(pts1, pts2)
-            return cv2.warpPerspective(img, matrix, (w, h), borderMode=cv2.BORDER_REFLECT)
 
         return img
 

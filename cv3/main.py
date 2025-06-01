@@ -1,9 +1,4 @@
 import cv2
-import numpy as np
-from PIL.Image import Image
-from PIL.ImageDraw import ImageDraw
-from PIL.ImageFont import ImageFont
-
 from matplotlib import pyplot as plt
 from augmentation import apply_augmentation
 from ocr import get_text
