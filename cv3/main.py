@@ -29,4 +29,4 @@ def apply_pipeline(path):
         axes[2].imshow(plate_img)
     plt.show()
 
-apply_pipeline('car2.jpg')
+apply_pipeline('car1.jpg')
