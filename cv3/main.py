@@ -11,7 +11,7 @@ def apply_pipeline(path):
     plate_img = None
     if plate_coord is not None:
         x, y, w, h = plate_coord
-        plate_img = img[y:y + h, x:x + w]
+        plate_img = output_img[y:y + h, x:x + w]
         plate_img = prepare_plate_img(plate_img)
         plate_text = get_text(plate_img)
         print(plate_text)
@@ -29,4 +29,4 @@ def apply_pipeline(path):
         axes[2].imshow(plate_img)
     plt.show()
 
-apply_pipeline('car1.jpg')
+apply_pipeline('car2.jpg')

@@ -77,23 +77,23 @@ class NoiseTransformer(ImageTransformer):
             sigma = 10
             gauss = np.random.normal(mean, sigma, img.shape).astype(np.int16)
             output = np.clip(img.astype(np.int16) + gauss, 0, 255).astype(np.uint8)
-
+            print("gaussian")
         elif noise_type == "poisson":
             noisy = np.random.poisson(img.astype(np.float32))
-            output = np.clip(noisy, 0, 255).astype(np.uint8)
-
+            output = np.clip(noisy, 0, 100).astype(np.uint8)
+            print("poisson")
         elif noise_type == "salt":
-            amount = 0.01
+            amount = 0.002
             num_salt = int(amount * img.size)
             coords = [np.random.randint(0, i - 1, num_salt) for i in img.shape[:2]]
             output[coords[0], coords[1]] = 255
-
+            print("salt")
         elif noise_type == "pepper":
             amount = 0.01
             num_pepper = int(amount * img.size)
             coords = [np.random.randint(0, i - 1, num_pepper) for i in img.shape[:2]]
             output[coords[0], coords[1]] = 0
-
+            print("pepper")
         return output
 
 

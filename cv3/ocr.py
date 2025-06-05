@@ -11,7 +11,7 @@ import re
 # убираем шум
 def prepare_plate_img(plate_img):
     img_gray = cv2.cvtColor(plate_img.copy(), cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(img_gray, (5, 5), 1)
+    blurred = cv2.GaussianBlur(img_gray, (3, 3), 1)
     threshold, binary_img = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)
 
     # Создаем ядро (структурный элемент) для морфологических операций — квадрат 2x2 пикселей
