@@ -23,9 +23,9 @@ class HaarRecognizeTests(unittest.TestCase):
     def test_augmentation(self):
         plate_img = cv2.imread('Haar/pattern_source.jpg')
         augmented_img = apply_augmentation(plate_img)
-        augmented_img = cv2.GaussianBlur(augmented_img, (7, 7), 3)
+        augmented_img = cv2.GaussianBlur(augmented_img, (5, 5), 2)
         gray = cv2.cvtColor(augmented_img, cv2.COLOR_BGR2GRAY)
-        plates = cascade.detectMultiScale(gray, scaleFactor=1.1, flags=cv2.CASCADE_DO_CANNY_PRUNING)
+        plates = cascade.detectMultiScale(gray, scaleFactor=1.1)
 
         for (x, y, w, h) in plates:
             cv2.rectangle(plate_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
