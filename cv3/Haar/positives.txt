@@ -1,0 +1,1 @@
+pattern_source.jpg 1 479 412 187 33
