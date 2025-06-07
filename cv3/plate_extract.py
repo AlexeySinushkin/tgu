@@ -58,4 +58,4 @@ def preprocess(image):
         result_img = rotate(result_img, found_angle)
         cv2.rectangle(result_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    return rotated_canny, result_img, plate_candidate
+    return result_img, plate_candidate

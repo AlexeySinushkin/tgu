@@ -36,7 +36,7 @@ def get_text(plate_img):
     results = reader.readtext(plate_img)
     text_string = ' '.join([res[1] for res in results])
     text_string = clean_text(text_string)
-    return text_string
+    return text_string.lower()
 
 
 class OcrTests(unittest.TestCase):
