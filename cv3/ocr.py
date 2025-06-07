@@ -1,5 +1,5 @@
 import unittest
-
+from Levenshtein import distance as levenshtein_distance
 import numpy as np
 from matplotlib import pyplot as plt
 import cv2
@@ -38,6 +38,10 @@ def get_text(plate_img):
     text_string = clean_text(text_string)
     return text_string.lower()
 
+
+def calculate_cer(true_text, text):
+    cer = levenshtein_distance(text.strip(), true_text) / len(true_text)
+    return cer
 
 class OcrTests(unittest.TestCase):
     def test_prepare_img(self):
