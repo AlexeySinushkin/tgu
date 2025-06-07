@@ -25,7 +25,7 @@ make -j 8
 make install 
 ldconfig
 
-cd opencv/opencv-3.4.0/apps/createsample
-g++ createsamples.cpp utility.cpp -o opencv_createsamples `pkg-config --cflags --libs opencv`
-
-
+find negatives -name '*.jpg' > negatives.txt
+./opencv_createsamples -info positives.txt -num 30 -w 24 -h 24 -vec positives.vec
+mkdir cascade_output
+./opencv_traincascade -data cascade_output -vec positives.vec -bg negatives.txt -numPos 24 -numNeg 30 -numStages 10 -w 24 -h 24

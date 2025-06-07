@@ -1,9 +1,9 @@
 import cv2
 
 # Путь к изображению
-image_path = 'pattern_source.jpg'
-output_annotation_file = 'positives.txt'
-image_name = 'pattern_source.jpg'
+image_path = '../car3.jpg'
+output_annotation_file = 'positives3.txt'
+image_name = 'car3.jpg'
 
 # Создаём окно и читаем изображение
 image = cv2.imread(image_path)
