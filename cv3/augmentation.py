@@ -69,16 +69,10 @@ class GeometricTransformer(ImageTransformer):
 
 class NoiseTransformer(ImageTransformer):
     def random_transform(self, img: np.ndarray) -> np.ndarray:
-        noise_type = random.choice(["gaussian", "poisson", "salt", "pepper"])
+        noise_type = random.choice(["poisson", "salt", "pepper"])
         output = img.copy()
 
-        if noise_type == "gaussian":
-            mean = 0
-            sigma = 10
-            gauss = np.random.normal(mean, sigma, img.shape).astype(np.int16)
-            output = np.clip(img.astype(np.int16) + gauss, 0, 255).astype(np.uint8)
-            print("gaussian")
-        elif noise_type == "poisson":
+        if noise_type == "poisson":
             noisy = np.random.poisson(img.astype(np.float32))
             output = np.clip(noisy, 0, 100).astype(np.uint8)
             print("poisson")
